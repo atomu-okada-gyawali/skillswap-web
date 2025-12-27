@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const SkillSwapPage: React.FC = () => {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center bg-gray-50 text-gray-800">
+    <div className="min-h-screen w-full flex flex-col items-center text-gray-800">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between md:mt-20 py-10 md:py-20">
           <div className="md:w-1/2 text-center md:text-left space-y-6">
