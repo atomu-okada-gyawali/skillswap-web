@@ -9,10 +9,10 @@ type FieldProps = {
 
 export default function Field({ label, htmlFor, error, children }: FieldProps) {
   return (
-    <div className="grid gap-1.5">
+    <div className="flex flex-col gap-1.5">
       {label && (
         <label
-          className="text-sm font-medium text-neutral-800"
+          className="text-sm font-medium text-gray-700"
           htmlFor={htmlFor}
         >
           {label}
@@ -23,7 +23,7 @@ export default function Field({ label, htmlFor, error, children }: FieldProps) {
 
       {error && (
         <p
-          className="text-sm text-red-600 flex items-center gap-1"
+          className="text-sm text-red-500"
           role="alert"
           aria-live="polite"
         >
