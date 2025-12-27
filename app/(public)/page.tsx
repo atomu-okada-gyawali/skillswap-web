@@ -5,8 +5,8 @@ import Link from "next/link";
 const SkillSwapPage: React.FC = () => {
   return (
     <div className="min-h-screen w-full flex flex-col items-center text-gray-800">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-center justify-between md:mt-20 py-10 md:py-20">
+      <div className="w-full   mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full  flex flex-col md:flex-row items-center justify-between md:mt-20 py-10 md:py-20">
           <div className="md:w-1/2 text-center md:text-left space-y-6">
             <h1 className="text-5xl md:text-6xl font-bold text-c5 leading-tight">
               TRADING TALENTS
@@ -18,7 +18,7 @@ const SkillSwapPage: React.FC = () => {
             </p>
           </div>
           <div className="md:w-1/2 mt-10 md:mt-0 flex justify-center">
-            <div className="relative w-full max-w-lg aspect-[729/533]">
+            <div className="relative w-full max-w-2xl aspect-[729/533]">
               <Image
                 src="/images/homepage_art.png"
                 alt="Homepage Art"
