@@ -1,10 +1,9 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { startTransition, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { LoginData, loginSchema } from "../schema";
 export default function LoginForm() {
@@ -17,14 +16,13 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
     mode: "onSubmit",
   });
-  const [pending, setTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
 
   const submit = async (values: LoginData) => {
-    setTransition(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // router.push("/");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    startTransition(() => {
+      router.push("/dashboard");
     });
-    console.log("login", values);
   };
 
   return (
@@ -39,7 +37,7 @@ export default function LoginForm() {
           autoComplete="email"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("email")}
-          placeholder="you@example.com"
+          placeholder="you@email.com"
         />
         {errors.email?.message && (
           <p className="text-xs text-red-600">{errors.email.message}</p>
@@ -62,11 +60,10 @@ export default function LoginForm() {
           <p className="text-xs text-red-600">{errors.password.message}</p>
         )}
       </div>
-
       <button
         type="submit"
         disabled={isSubmitting || pending}
-        className="bg-c4 text-c1 h-10 w-full rounded-md bg-foreground text-background text-sm font-semibold hover:opacity-90 disabled:opacity-60"
+        className="h-10 w-full rounded-md bg-foreground text-background text-sm font-semibold hover:opacity-90 disabled:opacity-60"
       >
         {isSubmitting || pending ? "Logging in..." : "Log in"}
       </button>
