@@ -4,7 +4,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <section>
       <Header />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto   bg-c1">{children}</main>
     </section>
   );
 }
