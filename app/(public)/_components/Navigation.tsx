@@ -26,10 +26,10 @@ export default function Sidebar() {
           <button
             key={item.name}
             onClick={() => setActive(item.name)}
-            className={`w-full flex justify-center items-center gap-3 px-3 py-2 rounded-md text-lg  transition-colors border-2 border-c7 ${
+            className={`w-full flex justify-center items-center gap-3 px-3 py-2 rounded-md text-lg  transition-colors border-2 ${
               active === item.name
-                ? "bg-c4 text-c1 font-medium"
-                : "text-c7 hover:bg-gray-50 hover:text-gray-900"
+                ? "bg-c4 text-c1 font-medium  border-c4"
+                : "text-c7 hover:bg-c2 hover:text-c1 hover:border-c2"
             }`}
           >
             <item.icon className="w-7 h-7  " />
