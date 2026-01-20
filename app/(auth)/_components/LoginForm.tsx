@@ -3,9 +3,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoginData, loginSchema } from "../schema";
+import { handleLogin } from "@/lib/actions/auth-actions";
 export default function LoginForm() {
   const router = useRouter();
   const {
@@ -16,12 +17,25 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
     mode: "onSubmit",
   });
-  const [pending, startTransition] = useTransition();
+  const [pending, setTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const submit = async (values: LoginData) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    startTransition(() => {
-      router.push("/dashboard");
+    setError(null);
+    setTransition(async () => {
+      try {
+        const response = await handleLogin(values);
+        if (!response.success) {
+          throw new Error(response.message);
+        }
+        if (response.success) {
+          router.push("/dashboard");
+        } else {
+          setError("Login failed");
+        }
+      } catch (err: Error | any) {
+        setError(err.message || "Login failed");
+      }
     });
   };
 
@@ -63,7 +77,7 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting || pending}
-        className="h-10 w-full rounded-md bg-foreground text-background text-sm font-semibold hover:opacity-90 disabled:opacity-60"
+        className="h-10 w-full rounded-md bg-c4 text-c1 text-sm font-semibold hover:opacity-90 disabled:opacity-60"
       >
         {isSubmitting || pending ? "Logging in..." : "Log in"}
       </button>
