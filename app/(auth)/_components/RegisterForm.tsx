@@ -5,8 +5,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { RegisterData, registerSchema } from "../schema";
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
+import { handleRegister } from "@/lib/actions/auth-actions";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -20,32 +21,45 @@ export default function RegisterForm() {
   });
 
   const [pending, setTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const submit = async (values: RegisterData) => {
+    setError(null);
     setTransition(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.push("/login");
+      try {
+        const response = await handleRegister(values);
+        if (!response.success) {
+          throw new Error(response.message);
+        }
+        if (response.success) {
+          router.push("/login");
+        } else {
+          setError("Registration failed");
+        }
+      } catch (err: Error | any) {
+        setError(err.message || "Registration failed");
+      }
     });
-    // GO TO LOGIN PAGE
+
     console.log("register", values);
   };
 
   return (
     <form onSubmit={handleSubmit(submit)} className="space-y-4">
       <div className="space-y-1">
-        <label className="text-sm font-medium" htmlFor="name">
-          Full name
+        <label className="text-sm font-medium" htmlFor="username">
+          Username
         </label>
         <input
-          id="name"
+          id="username"
           type="text"
-          autoComplete="name"
+          autoComplete="username"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
-          {...register("name")}
-          placeholder="Your name"
+          {...register("username")}
+          placeholder="username"
         />
-        {errors.name?.message && (
-          <p className="text-xs text-red-600">{errors.name.message}</p>
+        {errors.username?.message && (
+          <p className="text-xs text-red-600">{errors.username.message}</p>
         )}
       </div>
 
@@ -60,6 +74,22 @@ export default function RegisterForm() {
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("email")}
           placeholder="you@example.com"
+        />
+        {errors.email?.message && (
+          <p className="text-xs text-red-600">{errors.email.message}</p>
+        )}
+      </div>
+      <div className="space-y-1">
+        <label className="text-sm font-medium" htmlFor="fullName">
+          Full Name
+        </label>
+        <input
+          id="fullName"
+          type="text"
+          autoComplete="full name"
+          className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
+          {...register("fullName")}
+          placeholder="Full Name"
         />
         {errors.email?.message && (
           <p className="text-xs text-red-600">{errors.email.message}</p>
