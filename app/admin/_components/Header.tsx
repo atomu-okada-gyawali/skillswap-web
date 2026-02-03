@@ -13,7 +13,7 @@ export default function Header() {
                     <div className="flex items-center gap-3">
                         <Link href="/admin" className="flex items-center gap-2 group">
                             <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-foreground text-background font-semibold">
-                                A
+                                SS
                             </span>
                             <span className="text-base font-semibold tracking-tight group-hover:opacity-80 transition-opacity">
                                 Admin Panel

@@ -29,7 +29,13 @@ export default function LoginForm() {
           throw new Error(response.message);
         }
         if (response.success) {
-          router.push("/dashboard");
+          // Redirect based on user role
+          const role = response.data?.role;
+          if (role === "admin") {
+            router.push("/admin/users");
+          } else {
+            router.push("/dashboard");
+          }
         } else {
           setError("Login failed");
         }
