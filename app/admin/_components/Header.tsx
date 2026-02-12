@@ -1,42 +1,66 @@
 "use client";
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { LogOut, Menu } from "lucide-react";
+import { useState } from "react";
 
 export default function Header() {
   const { logout, user } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-c5 supports-[backdrop-filter]:bg-background/80 ">
-      <nav
-        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-        aria-label="Global"
-      >
-        <div className="flex h-16 items-center justify-between">
-          {/* Left: Logo & Title */}
-          <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex items-center gap-2 group">
-              <span className="text-base font-semibold tracking-tight group-hover:opacity-80 transition-opacity">
-                Skill Swap
+    <header className="sticky top-0 z-30 h-16 bg-white border-b border-c2">
+      <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        {/* Mobile menu button */}
+        <button className="xl:hidden p-2 text-c7 hover:bg-c1 rounded-lg">
+          <Menu className="w-5 h-5" />
+        </button>
+
+        {/* Spacer for desktop */}
+        <div className="hidden xl:block" />
+
+        {/* Right side */}
+        <div className="flex items-center gap-4">
+          {/* User dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-c1 transition-colors"
+            >
+              <div className="w-8 h-8 rounded-full bg-c5 flex items-center justify-center text-white text-sm font-medium">
+                {user?.email?.charAt(0).toUpperCase() || "A"}
+              </div>
+              <span className="hidden sm:block text-sm font-medium text-c7">
+                {user?.email || "Admin"}
               </span>
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-6 flex items-center justify-center text-xs font-semibold">
-              {user?.email || "Admin"}
-            </div>
-            <span className="text-sm font-medium sm:inline">
-              <button
-                onClick={() => {
-                  logout();
-                }}
-                className="w-full border border-red-500 bg-red-500 text-white flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-red-600 transition-colors text-left"
-              >
-                Logout
-              </button>
-            </span>
+            </button>
+
+            {showDropdown && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowDropdown(false)}
+                />
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-c2 py-1 z-20">
+                  <div className="px-4 py-2 border-b border-c2">
+                    <p className="text-sm font-medium text-c7">Signed in as</p>
+                    <p className="text-xs text-c7 truncate">{user?.email || "Admin"}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setShowDropdown(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      </nav>
+      </div>
     </header>
   );
 }

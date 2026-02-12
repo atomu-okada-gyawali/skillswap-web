@@ -6,129 +6,82 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import { handleDeleteUser } from "@/lib/actions/admin/user-actions";
 import DeleteModal from "@/app/_components/DeleteModal";
+import { Search, Pencil, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+
+interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  imageUrl?: string;
+}
+
+interface Pagination {
+  page: number;
+  size: number;
+  totalPages: number;
+  total: number;
+}
+
 const UserTable = ({
   users,
   pagination,
   search,
 }: {
-  users: any[];
-  pagination: any;
+  users: User[];
+  pagination: Pagination;
   search?: string;
 }) => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState(search || "");
+
   const handleSearchChange = () => {
     router.push(
-      `/admin/users?page=1&size=${pagination.size}` +
-        (searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""),
+      `/admin/users?page=1&size=${pagination.size}${
+        searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""
+      }`,
     );
   };
-  const makePagination = (): React.ReactElement[] => {
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearchChange();
+    }
+  };
+
+  const getPageNumbers = () => {
     const pages = [];
     const currentPage = pagination.page;
     const totalPages = pagination.totalPages;
-    const delta = 2; // Number of pages to show on each side of current page
+    const delta = 2;
 
-    // Previous button
-    const prevHref =
-      `/admin/users?page=${currentPage - 1}&size=${pagination.size}` +
-      (searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : "");
-    pages.push(
-      <Link
-        key="prev"
-        className={`px-3 py-1 border rounded-md 
-                    ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none" : "bg-white text-blue-500 hover:bg-blue-100"}`}
-        href={currentPage === 1 ? "#" : prevHref}
-      >
-        Previous
-      </Link>,
-    );
+    const startPage = Math.max(1, currentPage - delta);
+    const endPage = Math.min(totalPages, currentPage + delta);
 
-    // Calculate range of pages to show
-    let startPage = Math.max(1, currentPage - delta);
-    let endPage = Math.min(totalPages, currentPage + delta);
-
-    // Add first page if not in range
     if (startPage > 1) {
-      const href =
-        `/admin/users?page=1&size=${pagination.size}` +
-        (searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : "");
-      pages.push(
-        <Link
-          key={1}
-          className="px-3 py-1 border rounded-md bg-white text-blue-500 hover:bg-blue-100"
-          href={href}
-        >
-          1
-        </Link>,
-      );
-      if (startPage > 2) {
-        pages.push(
-          <span key="ellipsis1" className="px-2 text-gray-500">
-            ...
-          </span>,
-        );
-      }
+      pages.push(1);
+      if (startPage > 2) pages.push("...");
     }
 
-    // Add page numbers in range
     for (let i = startPage; i <= endPage; i++) {
-      const href =
-        `/admin/users?page=${i}&size=${pagination.size}` +
-        (search ? `&search=${encodeURIComponent(search)}` : "");
-      pages.push(
-        <Link
-          key={i}
-          className={`px-3 py-1 border rounded-md 
-                        ${i === currentPage ? "bg-blue-500 text-white" : "bg-white text-blue-500 hover:bg-blue-100"}`}
-          href={href}
-        >
-          {i}
-        </Link>,
-      );
+      pages.push(i);
     }
 
-    // Add last page if not in range
     if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pages.push(
-          <span key="ellipsis2" className="px-2 text-gray-500">
-            ...
-          </span>,
-        );
-      }
-      const href =
-        `/admin/users?page=${totalPages}&size=${pagination.size}` +
-        (search ? `&search=${encodeURIComponent(search)}` : "");
-      pages.push(
-        <Link
-          key={totalPages}
-          className="px-3 py-1 border rounded-md bg-white text-blue-500 hover:bg-blue-100"
-          href={href}
-        >
-          {totalPages}
-        </Link>,
-      );
+      if (endPage < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
     }
-
-    // Next button
-    const nextHref =
-      `/admin/users?page=${currentPage + 1}&size=${pagination.size}` +
-      (search ? `&search=${encodeURIComponent(search)}` : "");
-    pages.push(
-      <Link
-        key="next"
-        className={`px-3 py-1 border rounded-md 
-                    ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none" : "bg-white text-blue-500 hover:bg-blue-100"}`}
-        href={currentPage === totalPages ? "#" : nextHref}
-      >
-        Next
-      </Link>,
-    );
 
     return pages;
   };
-  const [deleteId, setDeleteId] = useState(null);
+
+  const buildPageUrl = (page: number) => {
+    return `/admin/users?page=${page}&size=${pagination.size}${
+      searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""
+    }`;
+  };
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const onDelete = async () => {
     try {
@@ -140,121 +93,206 @@ const UserTable = ({
       setDeleteId(null);
     }
   };
+
+  const getRoleBadgeColor = (role: string) => {
+    const colors: Record<string, string> = {
+      admin: "bg-purple-100 text-purple-700",
+      user: "bg-blue-100 text-blue-700",
+      moderator: "bg-orange-100 text-orange-700",
+    };
+    return colors[role.toLowerCase()] || "bg-c2 text-c7";
+  };
+
   return (
-    <div className="mt-6 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-c2 overflow-hidden">
       <DeleteModal
-        isOpen={deleteId}
+        isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={onDelete}
-        title="Delete Confirmation"
-        description="Are you sure you want to delete this item? This action cannot be undone."
+        title="Delete User"
+        description="Are you sure you want to delete this user? This action cannot be undone."
       />
 
-      <div className="p-4 bg-gray-50 dark:bg-gray-800">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSearchChange();
-            }
-          }}
-          placeholder="Search users..."
-          className="mr-2 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={handleSearchChange}
-          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        >
-          Search
-        </button>
-      </div>
-      <table className="w-full table-auto border-collapse">
-        <thead className="bg-gray-50 dark:bg-gray-800">
-          <tr>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
-              ID
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
-              Image
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
-              Name
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
-              Email
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
-              Role
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-          {users.map((user) => (
-            <tr key={user._id}>
-              <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-                {user._id}
-              </td>
-              <td className="px-4 py-2">
-                {user.imageUrl ? (
-                  <Image
-                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.imageUrl}`}
-                    alt="User Image"
-                    className="w-10 h-10 rounded-full object-cover"
-                    width={40}
-                    height={40}
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-gray-600 text-sm">N/A</span>
-                  </div>
-                )}
-              </td>
-              <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-                {user.fullName}
-              </td>
-              <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-                {user.email}
-              </td>
-              <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 text-capitalize">
-                {user.role}
-              </td>
-              <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-                {/* Add action buttons or links here */}
-                <Link
-                  href={`/admin/users/${user._id}`}
-                  className="text-green-500 hover:underline"
-                >
-                  View
-                </Link>
-                <Link
-                  href={`/admin/users/${user._id}/edit`}
-                  className="text-blue-500 ml-4 hover:underline"
-                >
-                  Edit
-                </Link>
-                <button
-                  onClick={() => setDeleteId(user._id)}
-                  className="ml-4 text-red-500 hover:underline"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {/* Pagination */}
-      <div className="p-4 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-        <div className="text-sm text-gray-700 dark:text-gray-300">
-          Page {pagination.page} of {pagination.totalPages}
+      <div className="p-4 border-b border-c2 bg-c1/50">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-c7 opacity-50" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Search by name or email..."
+              className="w-full pl-10 pr-4 py-2.5 border border-c3 rounded-lg text-sm text-c7 bg-white focus:outline-none focus:ring-2 focus:ring-c5 focus:border-transparent"
+            />
+          </div>
+          <button
+            onClick={handleSearchChange}
+            className="px-4 py-2.5 bg-c5 text-white rounded-lg font-medium hover:bg-c4 transition-colors"
+          >
+            Search
+          </button>
         </div>
-        <div className="space-x-2">{makePagination()}</div>
       </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-c1 border-b border-c2">
+            <tr>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-c7 opacity-70 uppercase tracking-wider">
+                User
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-c7 opacity-70 uppercase tracking-wider">
+                Email
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-c7 opacity-70 uppercase tracking-wider">
+                Role
+              </th>
+              <th className="px-6 py-4 text-right text-xs font-semibold text-c7 opacity-70 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-c1">
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-12 text-center text-c7 opacity-50">
+                  No users found
+                </td>
+              </tr>
+            ) : (
+              users.map((user) => (
+                <tr
+                  key={user._id}
+                  className="hover:bg-c1/50 transition-colors"
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      {user.imageUrl ? (
+                        <Image
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.imageUrl}`}
+                          alt={user.fullName || "User"}
+                          className="w-10 h-10 rounded-full object-cover ring-2 ring-c1"
+                          width={40}
+                          height={40}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-c5/10 rounded-full flex items-center justify-center">
+                          <span className="text-c5 font-medium text-sm">
+                            {user.fullName?.charAt(0).toUpperCase() || "U"}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium text-c7">{user.fullName || "N/A"}</p>
+                        <p className="text-xs text-c7 opacity-50">{user._id}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-c7 opacity-70">{user.email}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                        user.role,
+                      )}`}
+                    >
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/admin/users/${user._id}`}
+                        className="p-2 text-c7 opacity-50 hover:text-c5 hover:bg-c5/10 rounded-lg transition-colors"
+                        title="View"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                      <Link
+                        href={`/admin/users/${user._id}/edit`}
+                        className="p-2 text-c7 opacity-50 hover:text-c5 hover:bg-c5/10 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => setDeleteId(user._id)}
+                        className="p-2 text-c7 opacity-50 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {pagination.totalPages > 1 && (
+        <div className="px-6 py-4 border-t border-c2 bg-c1/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-c7 opacity-50">
+              Showing page <span className="font-medium text-c7">{pagination.page}</span> of{" "}
+              <span className="font-medium text-c7">{pagination.totalPages}</span> (
+              {pagination.total} total)
+            </p>
+            <div className="flex items-center gap-1">
+              <Link
+                href={
+                  pagination.page === 1
+                    ? "#"
+                    : buildPageUrl(pagination.page - 1)
+                }
+                className={`p-2 rounded-lg border transition-colors ${
+                  pagination.page === 1
+                    ? "text-c7 opacity-30 border-c2 cursor-not-allowed"
+                    : "text-c7 border-c3 hover:bg-c1"
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Link>
+              {getPageNumbers().map((page, idx) =>
+                page === "..." ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 text-c7 opacity-30">
+                    ...
+                  </span>
+                ) : (
+                  <Link
+                    key={page}
+                    href={buildPageUrl(page as number)}
+                    className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                      page === pagination.page
+                        ? "bg-c5 text-white"
+                        : "text-c7 hover:bg-c1 border border-c3"
+                    }`}
+                  >
+                    {page}
+                  </Link>
+                ),
+              )}
+              <Link
+                href={
+                  pagination.page === pagination.totalPages
+                    ? "#"
+                    : buildPageUrl(pagination.page + 1)
+                }
+                className={`p-2 rounded-lg border transition-colors ${
+                  pagination.page === pagination.totalPages
+                    ? "text-c7 opacity-30 border-c2 cursor-not-allowed"
+                    : "text-c7 border-c3 hover:bg-c1"
+                }`}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
