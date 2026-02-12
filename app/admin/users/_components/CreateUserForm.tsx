@@ -5,7 +5,7 @@ import { UserData, UserSchema } from "@/app/admin/users/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "react-toastify";
-import { handleCreateUser } from "@/lib/actions/user-actions";
+import { handleCreateUser } from "@/lib/actions/admin/user-actions";
 
 export default function CreateUserForm() {
   const [pending, startTransition] = useTransition();
@@ -26,7 +26,7 @@ export default function CreateUserForm() {
 
   const handleImageChange = (
     file: File | undefined,
-    onChange: (file?: File) => void
+    onChange: (file?: File) => void,
   ) => {
     if (file) {
       const reader = new FileReader();
@@ -84,9 +84,9 @@ export default function CreateUserForm() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-c1 p-6">
+    <div className="min-h-full w-full flex items-center justify-center bg-c1 p-6">
       {/* Card container */}
-      <div className="w-1/2 max-w-xl bg-c6 border border-c2 rounded-xl p-8 space-y-5 shadow-sm">
+      <div className="w-full max-w-xl bg-c6 border border-c2 rounded-xl p-8 space-y-5 shadow-sm">
         <h2 className="text-lg font-semibold text-c7 text-center">
           Create User
         </h2>
@@ -136,7 +136,9 @@ export default function CreateUserForm() {
                 ref={fileInputRef}
                 type="file"
                 accept=".jpg,.jpeg,.png,.webp"
-                onChange={(e) => handleImageChange(e.target.files?.[0], onChange)}
+                onChange={(e) =>
+                  handleImageChange(e.target.files?.[0], onChange)
+                }
                 className="
                   w-full text-sm text-c7
 
@@ -155,19 +157,47 @@ export default function CreateUserForm() {
           {errors.image && <p className={errorClass}>{errors.image.message}</p>}
 
           {/* ---------------- Inputs ---------------- */}
-          <input {...register("fullName")} placeholder="Full name" className={inputClass} />
-          {errors.fullName && <p className={errorClass}>{errors.fullName.message}</p>}
+          <input
+            {...register("fullName")}
+            placeholder="Full name"
+            className={inputClass}
+          />
+          {errors.fullName && (
+            <p className={errorClass}>{errors.fullName.message}</p>
+          )}
 
-          <input {...register("email")} placeholder="Email" className={inputClass} />
+          <input
+            {...register("email")}
+            placeholder="Email"
+            className={inputClass}
+          />
           {errors.email && <p className={errorClass}>{errors.email.message}</p>}
 
-          <input {...register("username")} placeholder="Username" className={inputClass} />
-          {errors.username && <p className={errorClass}>{errors.username.message}</p>}
+          <input
+            {...register("username")}
+            placeholder="Username"
+            className={inputClass}
+          />
+          {errors.username && (
+            <p className={errorClass}>{errors.username.message}</p>
+          )}
 
-          <input type="password" {...register("password")} placeholder="Password" className={inputClass} />
-          {errors.password && <p className={errorClass}>{errors.password.message}</p>}
+          <input
+            type="password"
+            {...register("password")}
+            placeholder="Password"
+            className={inputClass}
+          />
+          {errors.password && (
+            <p className={errorClass}>{errors.password.message}</p>
+          )}
 
-          <input type="password" {...register("confirmPassword")} placeholder="Confirm password" className={inputClass} />
+          <input
+            type="password"
+            {...register("confirmPassword")}
+            placeholder="Confirm password"
+            className={inputClass}
+          />
           {errors.confirmPassword && (
             <p className={errorClass}>{errors.confirmPassword.message}</p>
           )}
@@ -184,9 +214,7 @@ export default function CreateUserForm() {
               disabled:opacity-60
             "
           >
-            {isSubmitting || pending
-              ? "Creating account..."
-              : "Create account"}
+            {isSubmitting || pending ? "Creating account..." : "Create account"}
           </button>
         </form>
       </div>

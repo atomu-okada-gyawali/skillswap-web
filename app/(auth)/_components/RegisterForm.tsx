@@ -5,8 +5,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { RegisterData, registerSchema } from "../schema";
-import { useTransition, useState } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { handleRegister } from "@/lib/actions/auth-actions";
 
 export default function RegisterForm() {
@@ -21,10 +22,8 @@ export default function RegisterForm() {
   });
 
   const [pending, setTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
 
   const submit = async (values: RegisterData) => {
-    setError(null);
     setTransition(async () => {
       try {
         const response = await handleRegister(values);
@@ -32,12 +31,13 @@ export default function RegisterForm() {
           throw new Error(response.message);
         }
         if (response.success) {
+          toast.success("Registration successful! Please login.");
           router.push("/login");
         } else {
-          setError("Registration failed");
+          toast.error("Registration failed");
         }
       } catch (err: Error | any) {
-        setError(err.message || "Registration failed");
+        toast.error(err.message || "Registration failed");
       }
     });
 
@@ -91,8 +91,8 @@ export default function RegisterForm() {
           {...register("fullName")}
           placeholder="Full Name"
         />
-        {errors.email?.message && (
-          <p className="text-xs text-red-600">{errors.email.message}</p>
+        {errors.fullName?.message && (
+          <p className="text-xs text-red-600">{errors.fullName.message}</p>
         )}
       </div>
 

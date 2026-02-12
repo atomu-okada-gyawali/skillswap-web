@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const ADMIN_LINKS = [
   { href: "/admin", label: "Dashboard" },
@@ -31,8 +32,13 @@ export default function Sidebar() {
       <div className="p-4 border-b border-c2">
         <Link href="/admin" className="flex items-center gap-2">
           {/* Logo box */}
-          <div className="h-8 w-8 rounded bg-c4 text-c6 flex items-center justify-center font-bold">
-            A
+          <div className=" rounded-lg bg-white  text-c6 flex items-center justify-center font-bold">
+            <Image
+              src="/images/logo.png"
+              alt="Admin Panel Logo"
+              width={50}
+              height={50}
+            />
           </div>
 
           {/* Title */}

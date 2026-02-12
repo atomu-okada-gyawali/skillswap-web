@@ -5,18 +5,18 @@ import { ToastContainer } from "react-toastify";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex w-full min-h-screen">
+    <div className="flex w-full min-h-screen overflow-hidden">
       <AuthProvider>
         <div className="page-wrapper flex w-full">
           {/* Header/sidebar */}
           <div className="xl:block hidden">
             <Sidebar />
           </div>
-          <div className="w-full bg-background">
+          <div className="w-full bg-background flex-col">
             {/* Top Header  */}
             <Header />
             {/* Body Content  */}
-            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 p-2">
+            <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 p-2 pt-0 ">
               {children}
               <ToastContainer position="top-right" autoClose={3000} />
             </main>

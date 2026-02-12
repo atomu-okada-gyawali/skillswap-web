@@ -1,14 +1,22 @@
-
-
+import { handleGetOneUser } from "@/lib/actions/admin/user-actions";
+import UpdateUserForm from "../../_components/UpdateUserForm";
 export default async function Page({
-    params
+  params,
 }: {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }) {
-    const { id } = await params;
-    return (
-        <div>
-            Edit: {id}
-        </div>
-    );
+  const { id } = await params;
+
+  const response = await handleGetOneUser(id);
+
+  if (!response.success) {
+    throw new Error(response.message || "Failed to load user");
+  }
+
+  return (
+    <div>
+      Edit: {id}
+      <UpdateUserForm user={response.data} />
+    </div>
+  );
 }

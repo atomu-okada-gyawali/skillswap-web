@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Header from "../(public)/_components/Header";
+import { ToastContainer } from "react-toastify";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,6 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="w-full max-w-md rounded-xl border border-black/10 dark:border-white/10 bg-background/80 supports-[backdrop-filter]:backdrop-blur p-6 shadow-sm bg-white">
             {children}
           </div>
+          <ToastContainer position="top-right" autoClose={3000} />
         </div>
       </div>
     </section>

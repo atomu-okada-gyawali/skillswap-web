@@ -3,8 +3,9 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useTransition, useState } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { LoginData, loginSchema } from "../schema";
 import { handleLogin } from "@/lib/actions/auth-actions";
 export default function LoginForm() {
@@ -18,10 +19,8 @@ export default function LoginForm() {
     mode: "onSubmit",
   });
   const [pending, setTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
 
   const submit = async (values: LoginData) => {
-    setError(null);
     setTransition(async () => {
       try {
         const response = await handleLogin(values);
@@ -29,6 +28,7 @@ export default function LoginForm() {
           throw new Error(response.message);
         }
         if (response.success) {
+          toast.success("Login successful!");
           // Redirect based on user role
           const role = response.data?.role;
           if (role === "admin") {
@@ -37,10 +37,10 @@ export default function LoginForm() {
             router.push("/dashboard");
           }
         } else {
-          setError("Login failed");
+          toast.error("Login failed");
         }
       } catch (err: Error | any) {
-        setError(err.message || "Login failed");
+        toast.error(err.message || "Login failed");
       }
     });
   };
