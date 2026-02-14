@@ -8,6 +8,7 @@ import {
 } from "react";
 import { clearAuthCookies, getAuthToken, getUserData } from "@/lib/cookies";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 interface AuthContextProps {
   isAuthenticated: boolean;
@@ -49,9 +50,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await clearAuthCookies();
       setIsAuthenticated(false);
       setUser(null);
+      toast.success("Logged out successfully!");
       router.push("/login");
     } catch (error) {
       console.error("Logout failed:", error);
+      toast.error("Logout failed");
     }
   };
 

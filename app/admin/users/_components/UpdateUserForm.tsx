@@ -1,35 +1,43 @@
 "use client";
-
 import { Controller, useForm } from "react-hook-form";
 import { UserData, UserSchema } from "@/app/admin/users/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { toast } from "react-toastify";
-import { handleCreateUser } from "@/lib/actions/admin/user-actions";
-import { Upload, X, UserPlus } from "lucide-react";
+import { handleUpdateUser } from "@/lib/actions/admin/user-actions";
+import Image from "next/image";
+import { Upload, X, ArrowLeft, Save } from "lucide-react";
 
-export default function CreateUserForm() {
+export default function UpdateUserForm({ user }: { user: any }) {
   const [pending, startTransition] = useTransition();
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const {
     register,
     handleSubmit,
     control,
-    reset,
     formState: { errors, isSubmitting },
-  } = useForm<UserData>({
-    resolver: zodResolver(UserSchema),
+  } = useForm<Partial<UserData>>({
+    resolver: zodResolver(UserSchema.partial()),
+    defaultValues: {
+      fullName: user.fullName || "",
+      email: user.email || "",
+      username: user.username || "",
+      profilePicture: undefined,
+    },
   });
+
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (
     file: File | undefined,
-    onChange: (file?: File) => void,
+    onChange: (file: File | undefined) => void,
   ) => {
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setPreviewImage(reader.result as string);
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
       reader.readAsDataURL(file);
     } else {
       setPreviewImage(null);
@@ -37,35 +45,38 @@ export default function CreateUserForm() {
     onChange(file);
   };
 
-  const handleDismissImage = (onChange?: (file?: File) => void) => {
+  const handleDismissImage = (onChange?: (file: File | undefined) => void) => {
     setPreviewImage(null);
     onChange?.(undefined);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
-  const onSubmit = async (data: UserData) => {
+  const onSubmit = async (data: Partial<UserData>) => {
     startTransition(async () => {
       try {
         const formData = new FormData();
-
-        formData.append("email", data.email);
-        formData.append("username", data.username);
-        formData.append("password", data.password);
-        formData.append("confirmPassword", data.confirmPassword);
-
-        if (data.fullName) formData.append("fullName", data.fullName);
-        if (data.profilePicture)
+        if (data.fullName) {
+          formData.append("fullName", data.fullName);
+        }
+        if (data.email) {
+          formData.append("email", data.email);
+        }
+        if (data.username) {
+          formData.append("username", data.username);
+        }
+        if (data.profilePicture) {
           formData.append("profilePicture", data.profilePicture);
+        }
+        const response = await handleUpdateUser(user._id, formData);
 
-        const res = await handleCreateUser(formData);
-
-        if (!res.success) throw new Error(res.message);
-
-        reset();
-        handleDismissImage();
-        toast.success("User created successfully");
-      } catch (err: any) {
-        toast.error(err.message || "Create failed");
+        if (!response.success) {
+          throw new Error(response.message || "Update failed");
+        }
+        toast.success("User updated successfully");
+      } catch (error: Error | any) {
+        toast.error(error.message || "Update failed");
       }
     });
   };
@@ -78,15 +89,21 @@ export default function CreateUserForm() {
   return (
     <div className="max-w-xl mx-auto">
       <div className="bg-white rounded-xl shadow-sm border border-c2 p-8">
+        <Link
+          href="/admin/users"
+          className="inline-flex items-center gap-1.5 text-sm text-c7 opacity-60 hover:text-c5 mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Users
+        </Link>
+
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 bg-c5 rounded-lg flex items-center justify-center">
-            <UserPlus className="w-5 h-5 text-white" />
+            <Save className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-c7">Create User</h1>
-            <p className="text-sm text-c7 opacity-60">
-              Add a new member to your team
-            </p>
+            <h1 className="text-xl font-bold text-c7">Edit User</h1>
+            <p className="text-sm text-c7 opacity-60">Update user information</p>
           </div>
         </div>
 
@@ -113,6 +130,14 @@ export default function CreateUserForm() {
                   )}
                 />
               </div>
+            ) : user.profilePictureUrl ? (
+              <Image
+                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.profilePictureUrl}`}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover ring-4 ring-c1"
+                width={96}
+                height={96}
+              />
             ) : (
               <div className="w-24 h-24 rounded-full bg-c1 flex items-center justify-center">
                 <Upload className="w-8 h-8 text-c7 opacity-40" />
@@ -139,9 +164,7 @@ export default function CreateUserForm() {
             )}
           />
           {errors.profilePicture && (
-            <p className="text-xs text-red-500">
-              {errors.profilePicture.message}
-            </p>
+            <p className="text-xs text-red-500">{errors.profilePicture.message}</p>
           )}
 
           <div>
@@ -152,9 +175,7 @@ export default function CreateUserForm() {
               className={inputClass}
             />
             {errors.fullName && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.fullName.message}
-              </p>
+              <p className="text-xs text-red-500 mt-1">{errors.fullName.message}</p>
             )}
           </div>
 
@@ -167,9 +188,7 @@ export default function CreateUserForm() {
               className={inputClass}
             />
             {errors.email && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.email.message}
-              </p>
+              <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
             )}
           </div>
 
@@ -181,56 +200,25 @@ export default function CreateUserForm() {
               className={inputClass}
             />
             {errors.username && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.username.message}
-              </p>
+              <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>
             )}
           </div>
 
-          <div>
-            <label className={labelClass}>Password</label>
-            <input
-              type="password"
-              {...register("password")}
-              placeholder="Enter password"
-              className={inputClass}
-            />
-            {errors.password && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.password.message}
-              </p>
-            )}
+          <div className="flex gap-3 pt-2">
+            <Link
+              href={`/admin/users/${user._id}`}
+              className="flex-1 h-11 rounded-lg border border-c3 text-c7 font-medium flex items-center justify-center hover:bg-c1 transition-colors"
+            >
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting || pending}
+              className="flex-1 h-11 rounded-lg bg-c5 text-white font-medium hover:bg-c4 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting || pending ? "Updating..." : "Save Changes"}
+            </button>
           </div>
-
-          <div>
-            <label className={labelClass}>Confirm Password</label>
-            <input
-              type="password"
-              {...register("confirmPassword")}
-              placeholder="Confirm password"
-              className={inputClass}
-            />
-            {errors.confirmPassword && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting || pending}
-            className="w-full h-11 rounded-lg bg-c5 text-white font-semibold hover:bg-c4 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isSubmitting || pending ? (
-              "Creating..."
-            ) : (
-              <>
-                <UserPlus className="w-4 h-4" />
-                Create User
-              </>
-            )}
-          </button>
         </form>
       </div>
     </div>
