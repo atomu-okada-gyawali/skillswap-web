@@ -6,14 +6,21 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import { handleDeleteUser } from "@/lib/actions/admin/user-actions";
 import DeleteModal from "@/app/_components/DeleteModal";
-import { Search, Pencil, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  Pencil,
+  Trash2,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 interface User {
   _id: string;
   fullName: string;
   email: string;
   role: string;
-  imageUrl?: string;
+  profilePicture?: string;
 }
 
 interface Pagination {
@@ -156,21 +163,21 @@ const UserTable = ({
           <tbody className="divide-y divide-c1">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-c7 opacity-50">
+                <td
+                  colSpan={4}
+                  className="px-6 py-12 text-center text-c7 opacity-50"
+                >
                   No users found
                 </td>
               </tr>
             ) : (
               users.map((user) => (
-                <tr
-                  key={user._id}
-                  className="hover:bg-c1/50 transition-colors"
-                >
+                <tr key={user._id} className="hover:bg-c1/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      {user.imageUrl ? (
+                      {user.profilePicture ? (
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.imageUrl}`}
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.profilePicture}`}
                           alt={user.fullName || "User"}
                           className="w-10 h-10 rounded-full object-cover ring-2 ring-c1"
                           width={40}
@@ -184,7 +191,9 @@ const UserTable = ({
                         </div>
                       )}
                       <div>
-                        <p className="font-medium text-c7">{user.fullName || "N/A"}</p>
+                        <p className="font-medium text-c7">
+                          {user.fullName || "N/A"}
+                        </p>
                         <p className="text-xs text-c7 opacity-50">{user._id}</p>
                       </div>
                     </div>
@@ -237,9 +246,12 @@ const UserTable = ({
         <div className="px-6 py-4 border-t border-c2 bg-c1/50">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-c7 opacity-50">
-              Showing page <span className="font-medium text-c7">{pagination.page}</span> of{" "}
-              <span className="font-medium text-c7">{pagination.totalPages}</span> (
-              {pagination.total} total)
+              Showing page{" "}
+              <span className="font-medium text-c7">{pagination.page}</span> of{" "}
+              <span className="font-medium text-c7">
+                {pagination.totalPages}
+              </span>{" "}
+              ({pagination.total} total)
             </p>
             <div className="flex items-center gap-1">
               <Link
@@ -258,7 +270,10 @@ const UserTable = ({
               </Link>
               {getPageNumbers().map((page, idx) =>
                 page === "..." ? (
-                  <span key={`ellipsis-${idx}`} className="px-2 text-c7 opacity-30">
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="px-2 text-c7 opacity-30"
+                  >
                     ...
                   </span>
                 ) : (

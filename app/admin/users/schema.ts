@@ -12,7 +12,7 @@ export const UserSchema = z
     username: z
       .string()
       .min(3, { message: "Username must be at least 3 characters" }),
-    image: z
+    profilePicture: z
       .instanceof(File)
       .optional()
       .refine((file) => !file || file.size <= MAX_FILE_SIZE, {

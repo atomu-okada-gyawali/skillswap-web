@@ -22,7 +22,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
       fullName: user.fullName || "",
       email: user.email || "",
       username: user.username || "",
-      image: undefined,
+      profilePicture: undefined,
     },
   });
 
@@ -66,8 +66,8 @@ export default function UpdateUserForm({ user }: { user: any }) {
         if (data.username) {
           formData.append("username", data.username);
         }
-        if (data.image) {
-          formData.append("image", data.image);
+        if (data.profilePicture) {
+          formData.append("profilePicture", data.profilePicture);
         }
         const response = await handleUpdateUser(user._id, formData);
 
@@ -117,7 +117,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
                   className="w-24 h-24 rounded-full object-cover ring-4 ring-c1"
                 />
                 <Controller
-                  name="image"
+                  name="profilePicture"
                   control={control}
                   render={({ field: { onChange } }) => (
                     <button
@@ -130,9 +130,9 @@ export default function UpdateUserForm({ user }: { user: any }) {
                   )}
                 />
               </div>
-            ) : user.imageUrl ? (
+            ) : user.profilePictureUrl ? (
               <Image
-                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.imageUrl}`}
+                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.profilePictureUrl}`}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover ring-4 ring-c1"
                 width={96}
@@ -146,7 +146,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
           </div>
 
           <Controller
-            name="image"
+            name="profilePicture"
             control={control}
             render={({ field: { onChange } }) => (
               <div>
@@ -163,8 +163,8 @@ export default function UpdateUserForm({ user }: { user: any }) {
               </div>
             )}
           />
-          {errors.image && (
-            <p className="text-xs text-red-500">{errors.image.message}</p>
+          {errors.profilePicture && (
+            <p className="text-xs text-red-500">{errors.profilePicture.message}</p>
           )}
 
           <div>

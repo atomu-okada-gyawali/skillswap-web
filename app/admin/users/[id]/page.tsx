@@ -41,9 +41,9 @@ export default async function Page({
         <div className="md:col-span-1">
           <div className="bg-white rounded-xl shadow-sm border border-c2 p-6 text-center">
             <div className="relative w-32 h-32 mx-auto mb-4">
-              {user.imageUrl ? (
+              {user.profilePicture ? (
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.imageUrl}`}
+                  src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.profilePicture}`}
                   alt={user.fullName || "User"}
                   fill
                   className="rounded-full object-cover ring-4 ring-c1"
@@ -56,7 +56,9 @@ export default async function Page({
                 </div>
               )}
             </div>
-            <h2 className="text-xl font-bold text-c7">{user.fullName || "N/A"}</h2>
+            <h2 className="text-xl font-bold text-c7">
+              {user.fullName || "N/A"}
+            </h2>
             <p className="text-c7 text-sm mt-1 opacity-60">{user.email}</p>
             <span
               className={`inline-flex mt-3 px-3 py-1 rounded-full text-sm font-medium ring-1 ring-inset ${getRoleBadgeColor(
@@ -96,7 +98,9 @@ export default async function Page({
                   <User className="w-4 h-4" />
                   Full Name
                 </dt>
-                <dd className="text-c7 font-medium">{user.fullName || "N/A"}</dd>
+                <dd className="text-c7 font-medium">
+                  {user.fullName || "N/A"}
+                </dd>
               </div>
               <div className="flex items-center justify-between py-2 border-t border-c2">
                 <dt className="flex items-center gap-3 text-c7 opacity-60">

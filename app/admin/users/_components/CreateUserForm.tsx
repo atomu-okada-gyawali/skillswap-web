@@ -54,7 +54,8 @@ export default function CreateUserForm() {
         formData.append("confirmPassword", data.confirmPassword);
 
         if (data.fullName) formData.append("fullName", data.fullName);
-        if (data.image) formData.append("profilePicture", data.image);
+        if (data.profilePicture)
+          formData.append("profilePicture", data.profilePicture);
 
         const res = await handleCreateUser(formData);
 
@@ -83,7 +84,9 @@ export default function CreateUserForm() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-c7">Create User</h1>
-            <p className="text-sm text-c7 opacity-60">Add a new member to your team</p>
+            <p className="text-sm text-c7 opacity-60">
+              Add a new member to your team
+            </p>
           </div>
         </div>
 
@@ -97,7 +100,7 @@ export default function CreateUserForm() {
                   className="w-24 h-24 rounded-full object-cover ring-4 ring-c1"
                 />
                 <Controller
-                  name="image"
+                  name="profilePicture"
                   control={control}
                   render={({ field: { onChange } }) => (
                     <button
@@ -118,7 +121,7 @@ export default function CreateUserForm() {
           </div>
 
           <Controller
-            name="image"
+            name="profilePicture"
             control={control}
             render={({ field: { onChange } }) => (
               <div>
@@ -127,14 +130,18 @@ export default function CreateUserForm() {
                   ref={fileInputRef}
                   type="file"
                   accept=".jpg,.jpeg,.png,.webp"
-                  onChange={(e) => handleImageChange(e.target.files?.[0], onChange)}
+                  onChange={(e) =>
+                    handleImageChange(e.target.files?.[0], onChange)
+                  }
                   className="block w-full text-sm text-c7 opacity-60 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-c5 file:text-white file:cursor-pointer file:transition-opacity hover:file:opacity-90"
                 />
               </div>
             )}
           />
-          {errors.image && (
-            <p className="text-xs text-red-500">{errors.image.message}</p>
+          {errors.profilePicture && (
+            <p className="text-xs text-red-500">
+              {errors.profilePicture.message}
+            </p>
           )}
 
           <div>
@@ -145,7 +152,9 @@ export default function CreateUserForm() {
               className={inputClass}
             />
             {errors.fullName && (
-              <p className="text-xs text-red-500 mt-1">{errors.fullName.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.fullName.message}
+              </p>
             )}
           </div>
 
@@ -158,7 +167,9 @@ export default function CreateUserForm() {
               className={inputClass}
             />
             {errors.email && (
-              <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -170,7 +181,9 @@ export default function CreateUserForm() {
               className={inputClass}
             />
             {errors.username && (
-              <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.username.message}
+              </p>
             )}
           </div>
 
@@ -183,7 +196,9 @@ export default function CreateUserForm() {
               className={inputClass}
             />
             {errors.password && (
-              <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
