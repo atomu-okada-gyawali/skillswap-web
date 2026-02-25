@@ -171,7 +171,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
             <label className={labelClass}>Full Name</label>
             <input
               {...register("fullName")}
-              placeholder="Enter full name"
+              placeholder="default"
               className={inputClass}
             />
             {errors.fullName && (
@@ -184,7 +184,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
             <input
               {...register("email")}
               type="email"
-              placeholder="Enter email address"
+              placeholder="default"
               className={inputClass}
             />
             {errors.email && (
@@ -196,7 +196,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
             <label className={labelClass}>Username</label>
             <input
               {...register("username")}
-              placeholder="Enter username"
+              placeholder="default"
               className={inputClass}
             />
             {errors.username && (

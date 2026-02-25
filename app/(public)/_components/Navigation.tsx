@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   CompassIcon,
   HandIcon,
@@ -8,19 +9,28 @@ import {
   Heart,
   LogOut,
   User,
+  FileText,
+  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Sidebar() {
-  const [active, setActive] = useState("Explore");
+  const pathname = usePathname();
   const { user, logout } = useAuth();
 
   const menuItems = [
-    { name: "Explore", icon: CompassIcon, href: "/dashboard" },
+    { name: "Explore", icon: CompassIcon, href: "/dashboard/explore" },
+    { name: "Proposals", icon: FileText, href: "/dashboard/proposals" },
     { name: "Requests", icon: HandIcon, href: "/dashboard/requests" },
     { name: "Messages", icon: MessageCircle, href: "/dashboard/messages" },
     { name: "Favorites", icon: Heart, href: "/dashboard/favorites" },
+    { name: "Profile", icon: UserCircle, href: "/dashboard/profile" },
   ];
+
+  const isActive = (href: string) => {
+    if (href === "/dashboard") return pathname === "/dashboard";
+    return pathname.startsWith(href);
+  };
 
   return (
     <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0">
@@ -30,18 +40,20 @@ export default function Sidebar() {
           Menu
         </p>
         {menuItems.map((item) => (
-          <button
+          <Link
             key={item.name}
-            onClick={() => setActive(item.name)}
+            href={item.href}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-              active === item.name
+              isActive(item.href)
                 ? "bg-c2 text-c5"
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             }`}
           >
-            <item.icon className={`w-5 h-5 ${active === item.name ? "text-c5" : ""}`} />
+            <item.icon
+              className={`w-5 h-5 ${isActive(item.href) ? "text-c5" : ""}`}
+            />
             {item.name}
-          </button>
+          </Link>
         ))}
       </nav>
 

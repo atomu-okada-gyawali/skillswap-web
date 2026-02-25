@@ -129,7 +129,7 @@ const UserTable = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search by name or email..."
+              placeholder="default"
               className="w-full pl-10 pr-4 py-2.5 border border-c3 rounded-lg text-sm text-c7 bg-white focus:outline-none focus:ring-2 focus:ring-c5 focus:border-transparent"
             />
           </div>

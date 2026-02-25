@@ -148,7 +148,7 @@ export default function CreateUserForm() {
             <label className={labelClass}>Full Name</label>
             <input
               {...register("fullName")}
-              placeholder="Enter full name"
+              placeholder="default"
               className={inputClass}
             />
             {errors.fullName && (
@@ -163,7 +163,7 @@ export default function CreateUserForm() {
             <input
               {...register("email")}
               type="email"
-              placeholder="Enter email address"
+              placeholder="default"
               className={inputClass}
             />
             {errors.email && (
@@ -177,7 +177,7 @@ export default function CreateUserForm() {
             <label className={labelClass}>Username</label>
             <input
               {...register("username")}
-              placeholder="Enter username"
+              placeholder="default"
               className={inputClass}
             />
             {errors.username && (
@@ -192,7 +192,7 @@ export default function CreateUserForm() {
             <input
               type="password"
               {...register("password")}
-              placeholder="Enter password"
+              placeholder="default"
               className={inputClass}
             />
             {errors.password && (
@@ -207,7 +207,7 @@ export default function CreateUserForm() {
             <input
               type="password"
               {...register("confirmPassword")}
-              placeholder="Confirm password"
+              placeholder="default"
               className={inputClass}
             />
             {errors.confirmPassword && (

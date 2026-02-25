@@ -31,3 +31,14 @@ export type UserData = z.infer<typeof UserSchema>;
 
 export const UserEditSchema = UserSchema.partial();
 export type UserEditData = z.infer<typeof UserEditSchema>;
+
+
+export const PostSchema = z.object({
+  title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
+  description: z.string().min(1, "Description is required").max(500, "Description must be less than 500 characters"),
+  postPhoto: z.string().optional(),
+  requirements: z.array(z.string()).optional(),
+  locationType: z.string().min(1, "Location type is required"),
+  availability: z.string().min(1, "Availability is required"),
+  duration: z.string().optional(),
+});
