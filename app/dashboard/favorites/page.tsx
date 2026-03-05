@@ -1,18 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import Link from "next/link";
+import PostCard from "../explore/_components/PostCard";
 import {
-  Search,
-  Filter,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-  SlidersHorizontal,
-} from "lucide-react";
-import PostCard from "./_components/PostCard";
-import CreatePostModal from "./_components/CreatePostModal";
-import { handleGetAllPosts } from "@/lib/actions/post-actions";
-import {
+  handleGetFavorites,
   handleCreateFavorite,
   handleDeleteFavorite,
   handleGetUserFavoritePostIds,
@@ -41,29 +34,20 @@ interface Post {
   duration: string;
 }
 
-export default function Dashboard() {
+export default function FavoritesPage() {
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState<"recent" | "popular" | "title">(
-    "recent",
-  );
-  const [showFilters, setShowFilters] = useState(false);
-  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPosts, setTotalPosts] = useState(0);
   const [favoritePostIds, setFavoritePostIds] = useState<string[]>([]);
-  const [favoritesLoading, setFavoritesLoading] = useState(false);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchFavorites = async () => {
       setLoading(true);
-      const result = await handleGetAllPosts(
+      const result = await handleGetFavorites(
         currentPage.toString(),
         ITEMS_PER_PAGE.toString(),
-        searchQuery,
-        user?._id,
       );
       if (result.success && result.data) {
         setPosts(result.data as Post[]);
@@ -71,23 +55,19 @@ export default function Dashboard() {
       }
       setLoading(false);
     };
-    if (user?._id) {
-      fetchPosts();
-    }
-  }, [currentPage, searchQuery, user?._id]);
 
-  useEffect(() => {
-    const fetchFavorites = async () => {
-      if (!user?._id) return;
-      setFavoritesLoading(true);
+    const fetchFavoriteIds = async () => {
       const result = await handleGetUserFavoritePostIds();
       if (result.success && result.data) {
         setFavoritePostIds(result.data as string[]);
       }
-      setFavoritesLoading(false);
     };
-    fetchFavorites();
-  }, [user?._id]);
+
+    if (user?._id) {
+      fetchFavorites();
+      fetchFavoriteIds();
+    }
+  }, [currentPage, user?._id]);
 
   const handleToggleFavorite = async (postId: string) => {
     const isFavorited = favoritePostIds.includes(postId);
@@ -101,6 +81,7 @@ export default function Dashboard() {
     if (result.success) {
       if (isFavorited) {
         setFavoritePostIds((prev) => prev.filter((id) => id !== postId));
+        setPosts((prev) => prev.filter((post) => post._id !== postId));
         toast.success("Removed from favorites");
       } else {
         setFavoritePostIds((prev) => [...prev, postId]);
@@ -117,83 +98,14 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#fff2e0] p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-4 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Explore Skills</h1>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px] max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search skills..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-full text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <Filter className="w-5 h-5" />
-              <span className="hidden sm:inline">Filter</span>
-            </button>
-
-            <button
-              onClick={() =>
-                setSortBy(
-                  sortBy === "recent"
-                    ? "popular"
-                    : sortBy === "popular"
-                      ? "title"
-                      : "recent",
-                )
-              }
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-full text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <SlidersHorizontal className="w-5 h-5" />
-              <span className="hidden sm:inline capitalize">{sortBy}</span>
-            </button>
-
-            <button
-              onClick={() => setIsCreatePostOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-c5 text-white rounded-full hover:bg-purple-700 transition-colors font-medium"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="hidden sm:inline">Create Post</span>
-            </button>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">My Favorites</h1>
+          <p className="text-gray-600">
+            Posts you have saved for later
+          </p>
         </div>
 
-        {showFilters && (
-          <div className="mb-6 p-4 bg-white rounded-2xl border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-3">Filters</h3>
-            <div className="flex flex-wrap gap-2">
-              {[
-                "Design",
-                "Music",
-                "Tech",
-                "Cooking",
-                "Art",
-                "Fitness",
-                "Marketing",
-              ].map((tag) => (
-                <button
-                  key={tag}
-                  className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-c4 hover:text-c5-700 transition-colors"
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {loading || favoritesLoading ? (
+          {loading ? (
             <div className="col-span-full flex justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-c5"></div>
             </div>
@@ -205,7 +117,9 @@ export default function Dashboard() {
                 id={post._id}
                 title={post.title}
                 authorName={post.userId.username}
-                imageUrl={post.postPhoto ? BASE_URL + post.postPhoto : undefined}
+                imageUrl={
+                  post.postPhoto ? BASE_URL + post.postPhoto : undefined
+                }
                 avatarUrl={
                   post.userId.profilePicture
                     ? BASE_URL + post.userId.profilePicture
@@ -217,9 +131,18 @@ export default function Dashboard() {
             ))
           ) : (
             <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 text-lg">
-                No skills found matching your search.
-              </p>
+              <div className="flex flex-col items-center gap-4">
+                <Heart className="w-16 h-16 text-gray-300" />
+                <p className="text-gray-500 text-lg">
+                  You haven&apos;t favorited any posts yet.
+                </p>
+                <Link
+                  href="/dashboard/explore"
+                  className="px-4 py-2 bg-c5 text-white rounded-full hover:bg-purple-700 transition-colors"
+                >
+                  Explore Skills
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -259,11 +182,6 @@ export default function Dashboard() {
             </button>
           </div>
         )}
-
-        <CreatePostModal
-          isOpen={isCreatePostOpen}
-          onClose={() => setIsCreatePostOpen(false)}
-        />
       </div>
     </div>
   );

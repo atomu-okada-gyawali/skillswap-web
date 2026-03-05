@@ -1,5 +1,5 @@
-export default function Page({ children }: { children: React.ReactNode }) {
-    return (
-        <div></div>
-    );
+import { redirect } from "next/navigation";
+
+export default function Page() {
+    redirect("/dashboard/explore");
 }

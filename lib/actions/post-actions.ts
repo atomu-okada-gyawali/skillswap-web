@@ -146,7 +146,7 @@ export const handleDeletePost = async (id: string) => {
   try {
     const response = await deletePost(id);
     if (response.success) {
-      revalidatePath("/admin/posts");
+      revalidatePath("/dashboard/profile");
       return {
         success: true,
         message: "Delete post successful",

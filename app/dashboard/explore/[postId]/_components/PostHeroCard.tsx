@@ -1,5 +1,5 @@
 import { BASE_URL } from "@/lib/api/axios";
-import Image from "next/image";
+import SafeImage from "@/app/_components/SafeImage";
 import { MapPin, Clock, Calendar } from "lucide-react";
 
 interface PostHeroCardProps {
@@ -25,7 +25,7 @@ export default function PostHeroCard(props: PostHeroCardProps) {
   return (
     <div className="relative w-full rounded-2xl overflow-hidden bg-white shadow-lg">
       <div className="relative h-64 w-full">
-        <Image
+        <SafeImage
           src={postPhoto? BASE_URL + postPhoto : "/images/skillplaceholder.jpg"}
           alt={title}
           fill
@@ -51,7 +51,7 @@ export default function PostHeroCard(props: PostHeroCardProps) {
       <div className="p-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-blue-500 ring-offset-2">
-            <Image
+            <SafeImage
               src={props.userId.profilePicture ? BASE_URL + props.userId.profilePicture : "/images/avatarplaceholder.png"}
               alt={props.userId.username}
               fill

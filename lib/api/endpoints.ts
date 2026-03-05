@@ -19,8 +19,14 @@ export const API = {
       UPDATE: (userId: string) => `/api/admin/users/${userId}`,
       DELETE: (userId: string) => `/api/admin/users/${userId}`,
     },
+    TAG: {
+      CREATE: "/api/admin/tags/",
+      GET_ALL: "/api/admin/tags/",
+      GET_ONE: (tagId: string) => `/api/admin/tags/${tagId}`,
+      UPDATE: (tagId: string) => `/api/admin/tags/${tagId}`,
+      DELETE: (tagId: string) => `/api/admin/tags/${tagId}`,
+    },
   },
-
   POST: {
     CREATE: "/api/posts/",
     GET_ALL: "/api/posts/",
@@ -67,5 +73,13 @@ export const API = {
   TAG: {
     GET_ALL: "/api/tags/",
     GET_ONE: (tagId: string) => `/api/tags/${tagId}`,
+  },
+
+  FAVORITE: {
+    CREATE: "/api/favorites/",
+    DELETE: (postId: string) => `/api/favorites/${postId}`,
+    GET_ALL: "/api/favorites/",
+    CHECK: (postId: string) => `/api/favorites/check/${postId}`,
+    GET_POST_IDS: "/api/favorites/post-ids",
   },
 };

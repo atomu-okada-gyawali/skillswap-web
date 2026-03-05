@@ -62,11 +62,7 @@ export const getMyPosts = async (
 };
 export const updatePost = async (id: string, updateData: any) => {
   try {
-    const response = await axios.put(API.POST.UPDATE(id), updateData, {
-      headers: {
-        "Content-Type": "multipart/form-data", // for file upload/multer
-      },
-    });
+    const response = await axios.put(API.POST.UPDATE(id), updateData);
     return response.data;
   } catch (error: Error | any) {
     throw new Error(

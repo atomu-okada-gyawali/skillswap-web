@@ -1,5 +1,5 @@
 "use server";
-import { login, register, requestPasswordReset, resetPassword } from "@/lib/api/auth";
+import { login, register, requestPasswordReset, resetPassword, updateUserProfile } from "@/lib/api/auth";
 import { LoginData, RegisterData } from "@/app/(auth)/schema";
 import {
   setAuthToken,
@@ -98,4 +98,26 @@ export const handleLogin = async (data: LoginData) => {
 export const handleLogout = async () => {
   await clearAuthCookies();
   return redirect("/login");
+};
+
+export const handleUpdateProfile = async (data: { fullName?: string; username?: string; profilePicture?: File }) => {
+  try {
+    const response = await updateUserProfile(data);
+    if (response.success) {
+      return {
+        success: true,
+        message: "Profile updated successfully",
+        data: response.data,
+      };
+    }
+    return {
+      success: false,
+      message: response.message || "Update profile failed",
+    };
+  } catch (error: Error | any) {
+    return {
+      success: false,
+      message: error.message || "Update profile action failed",
+    };
+  }
 };

@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Upload, X, Plus } from "lucide-react";
 import { toast } from "react-toastify";
 import { handleCreatePost } from "@/lib/actions/post-actions";
-import { PostSchema } from "@/app/admin/users/schema";
-
+import { handleGetAllTags } from "@/lib/actions/tag-actions";
+import { PostSchema } from "../schema";
 
 type PostFormData = z.infer<typeof PostSchema>;
 
@@ -17,11 +17,30 @@ interface CreatePostModalProps {
   onClose: () => void;
 }
 
-export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
+export default function CreatePostModal({
+  isOpen,
+  onClose,
+}: CreatePostModalProps) {
   const [requirement, setRequirement] = useState("");
   const [requirements, setRequirements] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [tags, setTags] = useState<{ _id: string; name: string }[]>([]);
+  const [selectedTagId, setSelectedTagId] = useState<string>("");
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const result = await handleGetAllTags();
+      if (result.success && result.data) {
+        setTags(result.data);
+      }
+    };
+    if (isOpen) {
+      fetchTags();
+    }
+  }, [isOpen]);
+
+
 
   const {
     register,
@@ -35,6 +54,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
       title: "",
       description: "",
       requirements: [],
+      tag: [],
       locationType: "",
       availability: "",
       duration: "",
@@ -64,7 +84,19 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
       formData.append("locationType", data.locationType);
       formData.append("availability", data.availability);
       if (data.duration) formData.append("duration", data.duration);
-      if (data.requirements) formData.append("requirements", JSON.stringify(data.requirements));
+
+      // Append requirements as individual entries
+      if (data.requirements && data.requirements.length > 0) {
+        data.requirements.forEach((req) =>
+          formData.append("requirements", req),
+        );
+      }
+
+      // Append only the selected tag ID
+      if (selectedTagId) {
+        formData.append("tag", selectedTagId);
+      }
+
       if (selectedFile) formData.append("postPhoto", selectedFile);
 
       const result = await handleCreatePost(formData);
@@ -72,6 +104,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
         toast.success("Post created successfully!");
         reset();
         setRequirements([]);
+        setSelectedTagId("");
         setSelectedFile(null);
         setPreviewUrl(null);
         onClose();
@@ -86,6 +119,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
   const handleClose = () => {
     reset();
     setRequirements([]);
+    setSelectedTagId("");
     setSelectedFile(null);
     setPreviewUrl(null);
     onClose();
@@ -123,7 +157,9 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
               placeholder="default"
             />
             {errors.title && (
-              <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.title.message}
+              </p>
             )}
           </div>
 
@@ -138,7 +174,9 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
               placeholder="default"
             />
             {errors.description && (
-              <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.description.message}
+              </p>
             )}
           </div>
 
@@ -199,7 +237,9 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
               <input
                 value={requirement}
                 onChange={(e) => setRequirement(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addRequirement())}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addRequirement())
+                }
                 className="flex-1 px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 placeholder="default"
               />
@@ -232,6 +272,36 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             )}
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-1">
+              Tags
+            </label>
+            {tags.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <button
+                    key={tag._id}
+                    type="button"
+                    onClick={() => {
+                      const newTagId = selectedTagId === tag._id ? "" : tag._id;
+                      setSelectedTagId(newTagId);
+                      setValue("tag", newTagId ? [newTagId] : []);
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                      selectedTagId === tag._id
+                        ? "bg-blue-600 text-white"
+                        : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                    }`}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-zinc-400">No tags available</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-zinc-700 mb-1">
@@ -247,7 +317,9 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
                 <option value="hybrid">Hybrid</option>
               </select>
               {errors.locationType && (
-                <p className="mt-1 text-sm text-red-500">{errors.locationType.message}</p>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.locationType.message}
+                </p>
               )}
             </div>
 
@@ -266,7 +338,9 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
                 <option value="flexible">Flexible</option>
               </select>
               {errors.availability && (
-                <p className="mt-1 text-sm text-red-500">{errors.availability.message}</p>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.availability.message}
+                </p>
               )}
             </div>
           </div>

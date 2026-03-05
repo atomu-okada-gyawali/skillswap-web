@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
-import { LayoutDashboard, Users } from "lucide-react";
+import SafeImage from "@/app/_components/SafeImage";
+import { LayoutDashboard, Users, Tag } from "lucide-react";
 
 const ADMIN_LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/tags", label: "Tags", icon: Tag },
 ];
 
 export default function Sidebar() {
@@ -22,7 +23,7 @@ export default function Sidebar() {
       <div className="p-4 border-b border-c2">
         <Link href="/admin" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-c1 flex items-center justify-center">
-            <Image
+            <SafeImage
               src="/images/logo.png"
               alt="Admin Panel Logo"
               width={28}

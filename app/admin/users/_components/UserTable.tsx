@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import SafeImage from "@/app/_components/SafeImage";
 import { toast } from "react-toastify";
 import { handleDeleteUser } from "@/lib/actions/admin/user-actions";
 import DeleteModal from "@/app/_components/DeleteModal";
@@ -176,7 +176,7 @@ const UserTable = ({
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {user.profilePicture ? (
-                        <Image
+                        <SafeImage
                           src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.profilePicture}`}
                           alt={user.fullName || "User"}
                           className="w-10 h-10 rounded-full object-cover ring-2 ring-c1"

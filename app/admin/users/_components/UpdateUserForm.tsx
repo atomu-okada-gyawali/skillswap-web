@@ -6,7 +6,7 @@ import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { handleUpdateUser } from "@/lib/actions/admin/user-actions";
-import Image from "next/image";
+import SafeImage from "@/app/_components/SafeImage";
 import { Upload, X, ArrowLeft, Save } from "lucide-react";
 
 export default function UpdateUserForm({ user }: { user: any }) {
@@ -131,7 +131,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
                 />
               </div>
             ) : user.profilePictureUrl ? (
-              <Image
+              <SafeImage
                 src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.profilePictureUrl}`}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover ring-4 ring-c1"

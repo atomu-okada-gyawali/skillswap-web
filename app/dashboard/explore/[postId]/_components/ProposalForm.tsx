@@ -2,30 +2,20 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "react-toastify";
 import { Send, Loader2 } from "lucide-react";
 import { handleCreateProposal } from "@/lib/actions/proposal-actions";
 import { handleCreateSchedule } from "@/lib/actions/schedule-actions";
 import { handleGetMyPosts } from "@/lib/actions/post-actions";
 import { useEffect, useState } from "react";
+import { ProposalSchema, ScheduleSchema, ProposalFormDataComplete } from "../schema";
 
 interface MyPost {
   _id: string;
   title: string;
 }
 
-const ProposalSchema = z.object({
-  whatYouOffer: z.string().min(1, "Please select what you offer"),
-  proposalDetails: z
-    .string()
-    .min(10, "Proposal details must be at least 10 characters"),
-  proposedDate: z.string().min(1, "Please select a date"),
-  proposedTime: z.string().min(1, "Please select a time"),
-  durationMinutes: z.number().min(15, "Duration must be at least 15 minutes"),
-});
-
-type ProposalFormData = z.infer<typeof ProposalSchema>;
+type ProposalFormData = ProposalFormDataComplete;
 
 interface ProposalFormProps {
   postId: string;
@@ -53,16 +43,11 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
     fetchMyPosts();
   }, []);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<ProposalFormData>({
-    resolver: zodResolver(ProposalSchema),
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ProposalFormData>({
+    resolver: zodResolver(ProposalSchema.merge(ScheduleSchema)),
     defaultValues: {
-      whatYouOffer: "",
-      proposalDetails: "",
+      offeredSkill: "",
+      message: "",
       proposedDate: "",
       proposedTime: "",
       durationMinutes: 60,
@@ -70,12 +55,13 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
   });
 
   const onSubmit = async (data: ProposalFormData) => {
+    const submittingToastId = toast.loading("Submitting your proposal...");
     try {
       const proposalFormData = new FormData();
       proposalFormData.append("receiverId", receiverId);
       proposalFormData.append("postId", postId);
-      proposalFormData.append("offeredSkill", data.whatYouOffer);
-      proposalFormData.append("message", data.proposalDetails);
+      proposalFormData.append("offeredSkill", data.offeredSkill);
+      proposalFormData.append("message", data.message);
 
       const proposalResponse = await handleCreateProposal(proposalFormData);
 
@@ -91,16 +77,16 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
         const scheduleResponse = await handleCreateSchedule(scheduleFormData);
 
         if (scheduleResponse.success) {
-          toast.success("Proposal and schedule created successfully!");
+          toast.update(submittingToastId, { render: "Proposal and schedule created successfully!", type: "success", isLoading: false, autoClose: 3000 });
           reset();
         } else {
-          toast.error("Proposal created but failed to create schedule");
+          toast.update(submittingToastId, { render: "Proposal created but failed to create schedule", type: "warning", isLoading: false, autoClose: 3000 });
         }
       } else {
-        toast.error(proposalResponse.message || "Failed to submit proposal");
+        toast.update(submittingToastId, { render: proposalResponse.message || "Failed to submit proposal", type: "error", isLoading: false, autoClose: 3000 });
       }
     } catch {
-      toast.error("Failed to submit proposal");
+      toast.update(submittingToastId, { render: "Failed to submit proposal", type: "error", isLoading: false, autoClose: 3000 });
     }
   };
 
@@ -111,7 +97,7 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
           What You Offer <span className="text-red-500">*</span>
         </label>
         <select
-          {...register("whatYouOffer")}
+          {...register("offeredSkill")}
           className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 hover:bg-white"
           disabled={loadingPosts}
         >
@@ -126,9 +112,9 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
             ))
           )}
         </select>
-        {errors.whatYouOffer && (
+        {errors.offeredSkill && (
           <p className="mt-1.5 text-sm text-red-500">
-            {errors.whatYouOffer.message}
+            {errors.offeredSkill.message}
           </p>
         )}
       </div>
@@ -138,14 +124,14 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
           Proposal Details <span className="text-red-500">*</span>
         </label>
         <textarea
-          {...register("proposalDetails")}
+          {...register("message")}
           rows={4}
           className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 hover:bg-white resize-none"
           placeholder="Describe what you can offer and why you're a good fit..."
         />
-        {errors.proposalDetails && (
+        {errors.message && (
           <p className="mt-1.5 text-sm text-red-500">
-            {errors.proposalDetails.message}
+            {errors.message.message}
           </p>
         )}
       </div>

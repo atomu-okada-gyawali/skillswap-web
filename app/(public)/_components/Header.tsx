@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import logo from "../../../public/images/logo.png";
+import SafeImage from "@/app/_components/SafeImage";
 import { Menu, X } from "lucide-react";
+import logo from "@/public/images/logo.png";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,7 +13,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link href="/">
-            <Image src={logo} alt="Skill Swap Logo" height={60} width={60} />
+            <SafeImage src={logo} alt="Skill Swap Logo" height={60} width={60} />
           </Link>
 
           <nav className="hidden md:flex space-x-8 items-center">

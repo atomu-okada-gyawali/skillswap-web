@@ -7,9 +7,10 @@ import { z } from "zod";
 import { Upload, X, Plus, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { handleUpdatePost, handleGetOnePost } from "@/lib/actions/post-actions";
-import { PostSchema } from "@/app/admin/users/schema";
+import { handleGetAllTags } from "@/lib/actions/tag-actions";
+import { PostSchema } from "./schema";
 import Link from "next/link";
-import Image from "next/image";
+import SafeImage from "@/app/_components/SafeImage";
 import { BASE_URL } from "@/lib/api/axios";
 
 type PostFormData = z.infer<typeof PostSchema>;
@@ -26,6 +27,11 @@ interface PostData {
   duration: string;
 }
 
+interface Tag {
+  _id: string;
+  name: string;
+}
+
 export default function EditPostPage({
   params,
 }: {
@@ -39,11 +45,22 @@ export default function EditPostPage({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [existingPhoto, setExistingPhoto] = useState<string | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTagId, setSelectedTagId] = useState<string>("");
 
   useEffect(() => {
     const init = async () => {
       const { postId: id } = await params;
       setPostId(id);
+      
+      const fetchTags = async () => {
+        const result = await handleGetAllTags();
+        if (result.success && result.data) {
+          setTags(result.data);
+        }
+      };
+      fetchTags();
+
       const fetchPost = async () => {
         try {
           const result = await handleGetOnePost(id);
@@ -52,11 +69,13 @@ export default function EditPostPage({
             setPost(postData);
             setRequirements(postData.requirements || []);
             setExistingPhoto(postData.postPhoto);
+            setSelectedTagId(postData.tags?.[0] || "");
             setValue("title", postData.title);
             setValue("description", postData.description);
             setValue("locationType", postData.locationType);
             setValue("availability", postData.availability);
             setValue("duration", postData.duration || "");
+            setValue("tag", postData.tags || []);
           }
         } catch (error) {
           toast.error("Failed to load post");
@@ -80,6 +99,7 @@ export default function EditPostPage({
       title: "",
       description: "",
       requirements: [],
+      tag: [],
       locationType: "",
       availability: "",
       duration: "",
@@ -110,6 +130,7 @@ export default function EditPostPage({
       formData.append("availability", data.availability);
       if (data.duration) formData.append("duration", data.duration);
       if (requirements.length > 0) formData.append("requirements", JSON.stringify(requirements));
+      if (selectedTagId) formData.append("tag", selectedTagId);
       if (selectedFile) formData.append("postPhoto", selectedFile);
 
       const result = await handleUpdatePost(postId, formData);
@@ -211,7 +232,7 @@ export default function EditPostPage({
                     </div>
                   ) : existingPhoto ? (
                     <div className="relative w-full h-full p-2">
-                      <Image
+                      <SafeImage
                         src={BASE_URL + existingPhoto}
                         alt="Current photo"
                         fill
@@ -279,6 +300,36 @@ export default function EditPostPage({
                     </span>
                   ))}
                 </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tags
+              </label>
+              {tags.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <button
+                      key={tag._id}
+                      type="button"
+                      onClick={() => {
+                        const newTagId = selectedTagId === tag._id ? "" : tag._id;
+                        setSelectedTagId(newTagId);
+                        setValue("tag", newTagId ? [newTagId] : []);
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                        selectedTagId === tag._id
+                          ? "bg-c5 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">No tags available</p>
               )}
             </div>
 

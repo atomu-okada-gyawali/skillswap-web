@@ -3,7 +3,7 @@ import { API } from "./endpoints";
 
 export const createSchedule = async (scheduleData: any) => {
   try {
-    const response = await axios.post(API.SCHEDULE.CREATE, scheduleData);
+    const response = await axios.post(API.SCHEDULE.CREATE, scheduleData,);
     return response.data;
   } catch (error: Error | any) {
     throw new Error(

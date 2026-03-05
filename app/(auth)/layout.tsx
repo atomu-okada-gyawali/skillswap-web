@@ -1,4 +1,4 @@
-import Image from "next/image";
+import SafeImage from "@/app/_components/SafeImage";
 import Header from "../(public)/_components/Header";
 import { ToastContainer } from "react-toastify";
 
@@ -8,7 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Header />
       <div className="h-full w-full grid md:grid-cols-2 md:gap-0">
         <div className="relative hidden md:block h-full overflow-hidden">
-          <Image
+          <SafeImage
             src="/images/authImg.jpg"
             alt="Welcome illustration"
             fill
