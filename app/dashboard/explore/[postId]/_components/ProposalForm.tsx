@@ -4,8 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 import { Send, Loader2 } from "lucide-react";
-import { handleCreateProposal } from "@/lib/actions/proposal-actions";
-import { handleCreateSchedule } from "@/lib/actions/schedule-actions";
+import { handleCompleteProposalSubmission } from "@/lib/actions/proposal-actions";
 import { handleGetMyPosts } from "@/lib/actions/post-actions";
 import { useEffect, useState } from "react";
 import { ProposalSchema, ScheduleSchema, ProposalFormDataComplete } from "../schema";
@@ -63,27 +62,23 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
       proposalFormData.append("offeredSkill", data.offeredSkill);
       proposalFormData.append("message", data.message);
 
-      const proposalResponse = await handleCreateProposal(proposalFormData);
+      const scheduleData = {
+        proposedDate: data.proposedDate,
+        proposedTime: data.proposedTime,
+        durationMinutes: data.durationMinutes,
+      };
 
-      if (proposalResponse.success && proposalResponse.data?._id) {
-        const proposalId = proposalResponse.data._id;
+      const result = await handleCompleteProposalSubmission(proposalFormData, scheduleData);
 
-        const scheduleFormData = new FormData();
-        scheduleFormData.append("proposalId", proposalId);
-        scheduleFormData.append("proposedDate", data.proposedDate);
-        scheduleFormData.append("proposedTime", data.proposedTime);
-        scheduleFormData.append("durationMinutes", data.durationMinutes.toString());
-
-        const scheduleResponse = await handleCreateSchedule(scheduleFormData);
-
-        if (scheduleResponse.success) {
-          toast.update(submittingToastId, { render: "Proposal and schedule created successfully!", type: "success", isLoading: false, autoClose: 3000 });
-          reset();
+      if (result.success) {
+        if (result.warning) {
+          toast.update(submittingToastId, { render: result.message, type: "warning", isLoading: false, autoClose: 3000 });
         } else {
-          toast.update(submittingToastId, { render: "Proposal created but failed to create schedule", type: "warning", isLoading: false, autoClose: 3000 });
+          toast.update(submittingToastId, { render: result.message, type: "success", isLoading: false, autoClose: 3000 });
+          reset();
         }
       } else {
-        toast.update(submittingToastId, { render: proposalResponse.message || "Failed to submit proposal", type: "error", isLoading: false, autoClose: 3000 });
+        toast.update(submittingToastId, { render: result.message || "Failed to submit proposal", type: "error", isLoading: false, autoClose: 3000 });
       }
     } catch {
       toast.update(submittingToastId, { render: "Failed to submit proposal", type: "error", isLoading: false, autoClose: 3000 });

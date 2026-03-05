@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { handleGetAllChats } from "@/lib/actions/chat-actions";
 import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
 import { MessageCircle, User, Clock } from "lucide-react";
 
 interface Proposal {
@@ -34,21 +35,28 @@ interface Chat {
 }
 
 export default function MessagesIndexPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { setActiveChat } = useChat();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setActiveChat(null);
     const loadChats = async () => {
-      const result = await handleGetAllChats("1", "50");
-      if (result.success && result.data) {
-        setChats(result.data as Chat[]);
+      try {
+        const result = await handleGetAllChats("1", "50");
+        if (result.success && result.data) {
+          setChats(result.data as Chat[]);
+        }
+      } catch (error) {
+        console.error("Failed to load chats:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadChats();
-  }, []);
+  }, [setActiveChat]);
 
   const getOtherUser = (chat: Chat) => {
     const proposal = chat.proposalId;
@@ -73,7 +81,7 @@ export default function MessagesIndexPage() {
             <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 text-lg">No conversations yet</p>
             <p className="text-gray-400 text-sm mt-1">
-              Accept a proposal to start chatting
+              
             </p>
           </div>
         ) : (

@@ -5,7 +5,7 @@ import { UserData, UserSchema } from "@/app/admin/users/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "react-toastify";
-import { handleCreateUser } from "@/lib/actions/admin/user-actions";
+import { handleUserSubmission } from "@/lib/actions/admin/user-actions";
 import { Upload, X, UserPlus } from "lucide-react";
 
 export default function CreateUserForm() {
@@ -23,7 +23,7 @@ export default function CreateUserForm() {
     resolver: zodResolver(UserSchema),
   });
 
-  const handleImageChange = (
+  const onImageChange = (
     file: File | undefined,
     onChange: (file?: File) => void,
   ) => {
@@ -37,7 +37,7 @@ export default function CreateUserForm() {
     onChange(file);
   };
 
-  const handleDismissImage = (onChange?: (file?: File) => void) => {
+  const onDismissImage = (onChange?: (file?: File) => void) => {
     setPreviewImage(null);
     onChange?.(undefined);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -46,23 +46,12 @@ export default function CreateUserForm() {
   const onSubmit = async (data: UserData) => {
     startTransition(async () => {
       try {
-        const formData = new FormData();
-
-        formData.append("email", data.email);
-        formData.append("username", data.username);
-        formData.append("password", data.password);
-        formData.append("confirmPassword", data.confirmPassword);
-
-        if (data.fullName) formData.append("fullName", data.fullName);
-        if (data.profilePicture)
-          formData.append("profilePicture", data.profilePicture);
-
-        const res = await handleCreateUser(formData);
+        const res = await handleUserSubmission(data);
 
         if (!res.success) throw new Error(res.message);
 
         reset();
-        handleDismissImage();
+        onDismissImage();
         toast.success("User created successfully");
       } catch (err: any) {
         toast.error(err.message || "Create failed");
@@ -105,7 +94,7 @@ export default function CreateUserForm() {
                   render={({ field: { onChange } }) => (
                     <button
                       type="button"
-                      onClick={() => handleDismissImage(onChange)}
+                      onClick={() => onDismissImage(onChange)}
                       className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                     >
                       <X className="w-3 h-3" />
@@ -131,7 +120,7 @@ export default function CreateUserForm() {
                   type="file"
                   accept=".jpg,.jpeg,.png,.webp"
                   onChange={(e) =>
-                    handleImageChange(e.target.files?.[0], onChange)
+                    onImageChange(e.target.files?.[0], onChange)
                   }
                   className="block w-full text-sm text-c7 opacity-60 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-c5 file:text-white file:cursor-pointer file:transition-opacity hover:file:opacity-90"
                 />

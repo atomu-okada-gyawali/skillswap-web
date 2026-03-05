@@ -154,7 +154,7 @@ export default function ProposalCard({
             {proposal.status}
           </span>
           
-          {filter === "received" && proposal.status === "pending" && (
+          {filter === "received" && proposal.status === "pending" && proposal.schedules && proposal.schedules.length > 0 && (
             <div className="flex items-center gap-1 mt-2">
               <button
                 onClick={onAccept}
@@ -205,7 +205,7 @@ export default function ProposalCard({
             </button>
           )}
 
-          {proposal.status === "accepted" && (
+          {proposal.status === "accepted" && proposal.schedules && proposal.schedules.length > 0 && (
             <button
               onClick={onChat}
               disabled={actionLoading}

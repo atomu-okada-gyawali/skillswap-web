@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { handleCreateTag } from "@/lib/actions/admin/tag-actions";
+import { handleTagSubmission } from "@/lib/actions/admin/tag-actions";
 import { Tag, Upload, ArrowLeft } from "lucide-react";
 
 export default function CreateTagPage() {
@@ -12,17 +12,11 @@ export default function CreateTagPage() {
   const [tagImage, setTagImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const formData = new FormData();
-    formData.append("name", name);
-    if (tagImage) {
-      formData.append("tagImage", tagImage);
-    }
-
-    const result = await handleCreateTag(formData);
+    const result = await handleTagSubmission({ name, tagImage: tagImage || undefined });
 
     setLoading(false);
 
@@ -33,7 +27,7 @@ export default function CreateTagPage() {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setTagImage(file);
@@ -61,78 +55,87 @@ export default function CreateTagPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-c2 p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-c7 mb-2">
-              Tag Name *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full px-4 py-2 border border-c2 rounded-lg focus:outline-none focus:ring-2 focus:ring-c5 focus:border-transparent"
-              placeholder="Enter tag name"
-            />
-          </div>
+      <div className="bg-white rounded-2xl border border-c2 shadow-sm overflow-hidden">
+        <div className="p-8">
+          <form onSubmit={onSubmit} className="space-y-8">
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-c7/80">
+                Tag Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-gray-50 border border-c2 rounded-xl focus:outline-none focus:ring-2 focus:ring-c5/20 focus:border-c5 transition-all placeholder:text-c7/30"
+                placeholder="e.g. Graphic Design"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-c7 mb-2">
-              Tag Image
-            </label>
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-24 h-24 rounded-lg border-2 border-dashed border-c3 flex items-center justify-center overflow-hidden bg-c1">
-                  {preview || tagImage ? (
-                    <img
-                      src={preview || tagImage ? URL.createObjectURL(tagImage!) : ""}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Upload className="w-8 h-8 text-c3" />
-                  )}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-c7/80">
+                Tag Image
+              </label>
+              <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-2xl border-2 border-dashed border-c2 hover:border-c5/50 transition-colors group">
+                <div className="flex-shrink-0">
+                  <div className="w-24 h-24 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden border border-c2">
+                    {preview || tagImage ? (
+                      <img
+                        src={preview || tagImage ? URL.createObjectURL(tagImage!) : ""}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Upload className="w-8 h-8 text-c7/20 group-hover:text-c5 transition-colors" />
+                    )}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onImageChange}
+                    className="hidden"
+                    id="tagImage"
+                  />
+                  <label
+                    htmlFor="tagImage"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-c5 text-white rounded-xl cursor-pointer hover:bg-c4 shadow-lg shadow-c5/20 transition-all active:scale-95"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span className="font-semibold">Upload Image</span>
+                  </label>
+                  <p className="text-xs text-c7/50 mt-3">
+                    Supported formats: JPG, PNG. Max size 2MB.
+                  </p>
                 </div>
               </div>
-              <div className="flex-1">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                  id="tagImage"
-                />
-                <label
-                  htmlFor="tagImage"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-c1 text-c7 rounded-lg cursor-pointer hover:bg-c2 transition-colors"
-                >
-                  <Upload className="w-4 h-4" />
-                  Upload Image
-                </label>
-                <p className="text-xs text-c7 mt-2 opacity-70">
-                  Recommended: Square image, max 2MB
-                </p>
-              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-4 pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-c5 text-white rounded-lg font-medium hover:bg-c4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Creating..." : "Create Tag"}
-            </button>
-            <a
-              href="/admin/tags"
-              className="px-4 py-2 bg-c1 text-c7 rounded-lg font-medium hover:bg-c2 transition-colors"
-            >
-              Cancel
-            </a>
-          </div>
-        </form>
+            <div className="flex items-center gap-4 pt-6 border-t border-c2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-[2] px-6 py-3 bg-c5 text-white rounded-xl font-bold hover:bg-c4 shadow-lg shadow-c5/25 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating...
+                  </span>
+                ) : (
+                  "Create Tag"
+                )}
+              </button>
+              <a
+                href="/admin/tags"
+                className="flex-1 px-6 py-3 bg-white text-c7 border border-c2 rounded-xl font-semibold hover:bg-gray-50 text-center transition-all"
+              >
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

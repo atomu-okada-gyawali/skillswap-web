@@ -9,6 +9,8 @@ import {
   updateProposal,
   updateProposalStatus,
 } from "../api/proposal";
+import { createSchedule } from "../api/schedule";
+import { createChat } from "../api/chat";
 
 export const handleCreateProposal = async (data: FormData) => {
   try {
@@ -148,6 +150,71 @@ export const handleDeleteProposal = async (id: string) => {
     return {
       success: false,
       message: error.message || "Delete proposal action failed",
+    };
+  }
+};
+export const handleAcceptProposal = async (id: string) => {
+  return await handleUpdateProposalStatus(id, "accepted");
+};
+
+export const handleRejectProposal = async (id: string) => {
+  return await handleUpdateProposalStatus(id, "rejected");
+};
+
+export const handleCompleteProposalSubmission = async (
+  proposalData: FormData,
+  scheduleData: {
+    proposedDate: string;
+    proposedTime: string;
+    durationMinutes: number;
+  },
+) => {
+  try {
+
+    const proposalRes = await createProposal(proposalData);
+
+    if (!proposalRes.success || !proposalRes.data?._id) {
+      return {
+        success: false,
+        message: proposalRes.message || "Failed to create proposal",
+      };
+    }
+
+    const proposalId = proposalRes.data._id;
+
+    const scheduleFormData = new FormData();
+    scheduleFormData.append("proposalId", proposalId);
+    scheduleFormData.append("proposedDate", scheduleData.proposedDate);
+    scheduleFormData.append("proposedTime", scheduleData.proposedTime);
+    scheduleFormData.append(
+      "durationMinutes",
+      scheduleData.durationMinutes.toString(),
+    );
+
+    const scheduleRes = await createSchedule(scheduleFormData);
+
+
+
+    revalidatePath("/dashboard/proposals");
+
+    if (scheduleRes.success) {
+      return {
+        success: true,
+        message: "Proposal and schedule created successfully!",
+        data: proposalRes.data,
+      };
+    } else {
+      return {
+        success: true,
+        message: "Proposal created but failed to create schedule",
+        data: proposalRes.data,
+        warning: true,
+      };
+    }
+  } catch (error: Error | any) {
+    return {
+      success: false,
+      message: error.message || "Failed to complete proposal submission",
     };
   }
 };

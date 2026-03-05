@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { handleGetAllProposals, handleUpdateProposalStatus } from "@/lib/actions/proposal-actions";
-import { handleCreateChat } from "@/lib/actions/chat-actions";
+import { handleGetAllProposals, handleAcceptProposal, handleRejectProposal } from "@/lib/actions/proposal-actions";
+import { handleStartChat } from "@/lib/actions/chat-actions";
 import { useAuth } from "@/context/AuthContext";
 import { FileText } from "lucide-react";
 import { toast } from "react-toastify";
@@ -78,9 +78,9 @@ export default function ProposalsPage() {
     fetchProposals();
   }, [currentPage]);
 
-  const handleAccept = async (proposalId: string) => {
+  const onAccept = async (proposalId: string) => {
     setActionLoading(proposalId);
-    const result = await handleUpdateProposalStatus(proposalId, "accepted");
+    const result = await handleAcceptProposal(proposalId);
     if (result.success) {
       toast.success("Proposal accepted!");
       fetchProposals();
@@ -90,9 +90,9 @@ export default function ProposalsPage() {
     setActionLoading(null);
   };
 
-  const handleReject = async (proposalId: string) => {
+  const onReject = async (proposalId: string) => {
     setActionLoading(proposalId);
-    const result = await handleUpdateProposalStatus(proposalId, "rejected");
+    const result = await handleRejectProposal(proposalId);
     if (result.success) {
       toast.success("Proposal rejected!");
       fetchProposals();
@@ -102,16 +102,14 @@ export default function ProposalsPage() {
     setActionLoading(null);
   };
 
-  const handleChat = async (proposalId: string, receiverId: string) => {
+  const onChat = async (proposalId: string, receiverId: string) => {
     setActionLoading(proposalId);
     try {
-      const formData = new FormData();
-      formData.append("proposalId", proposalId);
-      const result = await handleCreateChat(formData);
+      const result = await handleStartChat(proposalId);
       if (result.success && result.data) {
         router.push(`/dashboard/messages/${result.data._id}`);
       } else {
-        toast.error(result.message || "Failed to create chat");
+        toast.error(result.message || "Failed to start chat");
       }
     } catch {
       toast.error("Failed to start chat");
@@ -164,9 +162,9 @@ export default function ProposalsPage() {
                 expanded={expandedProposal === proposal._id}
                 actionLoading={actionLoading === proposal._id}
                 onToggleExpand={() => setExpandedProposal(expandedProposal === proposal._id ? null : proposal._id)}
-                onAccept={() => handleAccept(proposal._id)}
-                onReject={() => handleReject(proposal._id)}
-                onChat={() => handleChat(proposal._id, filter === "received" ? getReceiverId(proposal) : getChatReceiverId(proposal))}
+                onAccept={() => onAccept(proposal._id)}
+                onReject={() => onReject(proposal._id)}
+                onChat={() => onChat(proposal._id, filter === "received" ? getReceiverId(proposal) : getChatReceiverId(proposal))}
               />
             ))}
           </div>

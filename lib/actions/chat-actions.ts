@@ -101,6 +101,19 @@ export const handleGetChatsByProposal = async (proposalId: string) => {
   }
 };
 
+export const handleStartChat = async (proposalId: string) => {
+  try {
+    const formData = new FormData();
+    formData.append("proposalId", proposalId);
+    return await handleCreateChat(formData);
+  } catch (error: Error | any) {
+    return {
+      success: false,
+      message: error.message || "Failed to start chat",
+    };
+  }
+};
+
 export const handleDeleteChat = async (id: string) => {
   try {
     const response = await deleteChat(id);

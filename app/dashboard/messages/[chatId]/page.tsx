@@ -43,7 +43,7 @@ export default function ChatPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const { messages, sendMessage, isLoading } = useChat();
+  const { messages, sendMessage, isLoading, setActiveChat } = useChat();
   const [chatData, setChatData] = useState<ChatData | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -56,15 +56,20 @@ export default function ChatPage() {
       const result = await handleGetOneChat(chatId);
       if (result.success && result.data) {
         setChatData(result.data);
+        setActiveChat(result.data as any);
       } else {
-        router.push("/dashboard/proposals");
+        router.push("/dashboard/messages");
       }
     };
 
     if (chatId) {
       loadChat();
     }
-  }, [chatId, router]);
+
+    return () => {
+      setActiveChat(null);
+    };
+  }, [chatId, router, setActiveChat]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

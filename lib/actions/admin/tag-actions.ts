@@ -9,6 +9,23 @@ import {
 } from "@/lib/api/admin/tag";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+export const handleTagSearch = async (searchTerm: string, size: number) => {
+  const params = new URLSearchParams();
+  params.set("page", "1");
+  params.set("size", size.toString());
+  if (searchTerm) params.set("search", searchTerm);
+  redirect(`/admin/tags?${params.toString()}`);
+};
+
+export const handleTagPagination = async (page: number, size: number, search?: string) => {
+  const params = new URLSearchParams();
+  params.set("page", page.toString());
+  params.set("size", size.toString());
+  if (search) params.set("search", search);
+  redirect(`/admin/tags?${params.toString()}`);
+};
 
 export const handleCreateTag = async (data: FormData) => {
   try {
@@ -128,4 +145,24 @@ export const handleDeleteTag = async (id: string) => {
       message: error.message || "Tag deletion action failed",
     };
   }
+};
+
+export const handleTagSubmission = async (data: {
+  name: string;
+  tagImage?: File;
+}) => {
+  const formData = new FormData();
+  formData.append("name", data.name);
+  if (data.tagImage) formData.append("tagImage", data.tagImage);
+  return await handleCreateTag(formData);
+};
+
+export const handleTagUpdate = async (
+  id: string,
+  data: { name: string; tagImage?: File | null },
+) => {
+  const formData = new FormData();
+  formData.append("name", data.name);
+  if (data.tagImage) formData.append("tagImage", data.tagImage);
+  return await handleUpdateTag(id, formData);
 };

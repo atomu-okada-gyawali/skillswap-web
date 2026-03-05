@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { handleGetOneTag, handleUpdateTag } from "@/lib/actions/admin/tag-actions";
+import { handleGetOneTag, handleTagUpdate } from "@/lib/actions/admin/tag-actions";
 import { Tag, Upload, ArrowLeft } from "lucide-react";
 import { BASE_URL } from "@/lib/api/axios";
 
@@ -41,17 +41,14 @@ export default function EditTagPage({
     fetchTag();
   }, [params]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const formData = new FormData();
-    formData.append("name", name);
-    if (tagImage) {
-      formData.append("tagImage", tagImage);
-    }
-
-    const result = await handleUpdateTag(tagId, formData);
+    const result = await handleTagUpdate(tagId, {
+      name,
+      tagImage: tagImage || undefined,
+    });
 
     setLoading(false);
 
@@ -62,7 +59,7 @@ export default function EditTagPage({
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setTagImage(file);
@@ -91,7 +88,7 @@ export default function EditTagPage({
       </div>
 
       <div className="bg-white rounded-xl border border-c2 p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={onSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-c7 mb-2">
               Tag Name *
@@ -134,7 +131,7 @@ export default function EditTagPage({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleImageChange}
+                  onChange={onImageChange}
                   className="hidden"
                   id="tagImage"
                 />

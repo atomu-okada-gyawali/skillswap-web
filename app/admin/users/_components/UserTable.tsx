@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SafeImage from "@/app/_components/SafeImage";
 import { toast } from "react-toastify";
-import { handleDeleteUser } from "@/lib/actions/admin/user-actions";
+import { handleDeleteUser, handleUserSearch, handleUserPagination } from "@/lib/actions/admin/user-actions";
 import DeleteModal from "@/app/_components/DeleteModal";
 import {
   Search,
@@ -42,17 +42,13 @@ const UserTable = ({
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState(search || "");
 
-  const handleSearchChange = () => {
-    router.push(
-      `/admin/users?page=1&size=${pagination.size}${
-        searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""
-      }`,
-    );
+  const onSearchChange = async () => {
+    await handleUserSearch(searchTerm, pagination.size);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleSearchChange();
+      onSearchChange();
     }
   };
 
@@ -128,13 +124,13 @@ const UserTable = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={onKeyDown}
               placeholder="default"
               className="w-full pl-10 pr-4 py-2.5 border border-c3 rounded-lg text-sm text-c7 bg-white focus:outline-none focus:ring-2 focus:ring-c5 focus:border-transparent"
             />
           </div>
           <button
-            onClick={handleSearchChange}
+            onClick={onSearchChange}
             className="px-4 py-2.5 bg-c5 text-white rounded-lg font-medium hover:bg-c4 transition-colors"
           >
             Search
@@ -254,12 +250,9 @@ const UserTable = ({
               ({pagination.total} total)
             </p>
             <div className="flex items-center gap-1">
-              <Link
-                href={
-                  pagination.page === 1
-                    ? "#"
-                    : buildPageUrl(pagination.page - 1)
-                }
+              <button
+                onClick={() => handleUserPagination(pagination.page - 1, pagination.size, search)}
+                disabled={pagination.page === 1}
                 className={`p-2 rounded-lg border transition-colors ${
                   pagination.page === 1
                     ? "text-c7 opacity-30 border-c2 cursor-not-allowed"
@@ -267,7 +260,7 @@ const UserTable = ({
                 }`}
               >
                 <ChevronLeft className="w-4 h-4" />
-              </Link>
+              </button>
               {getPageNumbers().map((page, idx) =>
                 page === "..." ? (
                   <span
@@ -277,9 +270,9 @@ const UserTable = ({
                     ...
                   </span>
                 ) : (
-                  <Link
+                  <button
                     key={page}
-                    href={buildPageUrl(page as number)}
+                    onClick={() => handleUserPagination(page as number, pagination.size, search)}
                     className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
                       page === pagination.page
                         ? "bg-c5 text-white"
@@ -287,15 +280,12 @@ const UserTable = ({
                     }`}
                   >
                     {page}
-                  </Link>
+                  </button>
                 ),
               )}
-              <Link
-                href={
-                  pagination.page === pagination.totalPages
-                    ? "#"
-                    : buildPageUrl(pagination.page + 1)
-                }
+              <button
+                onClick={() => handleUserPagination(pagination.page + 1, pagination.size, search)}
+                disabled={pagination.page === pagination.totalPages}
                 className={`p-2 rounded-lg border transition-colors ${
                   pagination.page === pagination.totalPages
                     ? "text-c7 opacity-30 border-c2 cursor-not-allowed"
@@ -303,7 +293,7 @@ const UserTable = ({
                 }`}
               >
                 <ChevronRight className="w-4 h-4" />
-              </Link>
+              </button>
             </div>
           </div>
         </div>

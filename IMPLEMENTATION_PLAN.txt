@@ -1,0 +1,640 @@
+================================================================================
+                    SKILLSWAP MOBILE APP - IMPLEMENTATION PLAN
+================================================================================
+Generated: Discussion-based planning document
+Purpose: Reference guide for development progress
+
+================================================================================
+                              TABLE OF CONTENTS
+================================================================================
+1. PROJECT OVERVIEW
+2. CURRENT STATE ANALYSIS
+3. ARCHITECTURE DECISIONS
+4. API CONFIGURATION
+5. DATA MODELS SPECIFICATION
+6. FEATURE IMPLEMENTATION DETAILS
+7. API ENDPOINTS REFERENCE
+8. FILE STRUCTURE
+9. IMPLEMENTATION ORDER
+10. CODE CONVENTIONS
+11. OPEN QUESTIONS / NOTES
+
+================================================================================
+                         1. PROJECT OVERVIEW
+================================================================================
+Project Name: SkillSwap Mobile App
+Purpose: A skill exchange platform where users can post skills they want to 
+         teach/learn and connect with others through proposals.
+Platform: Flutter Mobile (iOS/Android)
+Backend: Express/MongoDB at localhost:5050
+
+================================================================================
+                      2. CURRENT STATE ANALYSIS
+================================================================================
+
+--- WHAT'S ALREADY DONE ---
+✅ Authentication System
+   - Login with email/password
+   - Register with username, email, password, full name
+   - Logout (clears tokens, redirects to login)
+   - JWT token management via flutter_secure_storage
+   - Token stored with key: 'auth_token'
+
+✅ API Client
+   - Dio-based HTTP client
+   - JWT interceptor (adds Authorization header)
+   - Auto-retry on connection timeout (1 retry)
+   - Pretty logger in debug mode
+   - Base URL from EnvironmentConfig
+
+✅ Repository Pattern
+   - Domain layer with entities and repository interfaces
+   - Data layer with models, datasources, repository implementations
+   - Offline support using Hive for local caching
+   - Error handling using dartz Either<Failure, Success>
+
+✅ State Management
+   - Riverpod (flutter_riverpod)
+   - Providers for datasources, repositories, viewmodels
+
+✅ Basic UI Structure
+   - Splash Screen
+   - Onboarding Screen
+   - Auth Screen (Login/Register forms)
+   - Dashboard with bottom navigation
+   - Explore Screen (with mock data)
+   - Profile Screen placeholder
+   - Proposal Screen placeholder
+   - Message Screen placeholder
+
+--- WHAT'S MISSING ---
+❌ Posts Feature - No API integration, hardcoded mock data
+❌ Tags Feature - Not implemented at all
+❌ Proposals Feature - Empty placeholder
+❌ Messages Feature - Empty placeholder  
+❌ Profile Edit - No edit functionality
+❌ Post CRUD - No create/edit/delete
+❌ Offline caching for posts/tags
+
+================================================================================
+                       3. ARCHITECTURE DECISIONS
+================================================================================
+
+STATE MANAGEMENT
+   Tool: flutter_riverpod (already installed)
+   Pattern: Providers + StateNotifier/AsyncNotifier
+   Current: Works well, continue using
+
+ROUTING
+   Tool: Flutter Navigator (keep current)
+   Reason: Current implementation works, no need to migrate to go_router
+   Note: If complex routing needed later, can add go_router
+
+JSON SERIALIZATION
+   Tool: json_serializable + build_runner
+   Why: Automatic fromJson/toJson, type safety, less boilerplate
+   Command: dart run build_runner build --delete-conflicting-outputs
+
+OFFLINE MODE
+   Strategy: Cache posts and tags in Hive like auth does
+   Flow: 
+     1. Check network connectivity
+     2. If online: fetch from API, update local cache
+     3. If offline: return cached data from Hive
+   Implementation: Same pattern as AuthRepository
+
+DEPENDENCY INJECTION
+   Current: Manual provider overrides in Riverpod
+   Keep: No need for get_it
+
+IMAGE UPLOAD
+   Method: multipart/form-data via Dio
+   Already working for profile pictures
+   Reuse for post photos
+
+================================================================================
+                        4. API CONFIGURATION
+================================================================================
+
+BASE URL
+   Source: EnvironmentConfig.getBaseUrl()
+   Expected: Should return http://localhost:5050/api
+   File: lib/core/config/environment_config.dart
+
+AUTHENTICATION
+   Method: JWT Bearer token
+   Storage: flutter_secure_storage with key 'auth_token'
+   Header: Authorization: Bearer <token>
+   Handled by: _AuthInterceptor in ApiClient
+
+ERROR HANDLING
+   Success response: { "success": true, "data": {...} }
+   Error response: { "success": false, "message": "..." }
+   Status codes: 200=success, 400=bad request, 401=unauthorized, 404=not found, 500=server error
+
+================================================================================
+                     5. DATA MODELS SPECIFICATION
+================================================================================
+
+--- USER MODEL ---
+File: lib/features/auth/data/models/auth_api_model.dart (existing)
+Fields to add:
+   - role: String ("user" | "admin") - for future use, not needed now
+
+--- POST MODEL ---
+File: lib/features/posts/data/models/post_model.dart (new)
+Fields:
+   - _id: String
+   - userId: String
+   - title: String
+   - description: String
+   - postPhoto: String? (URL)
+   - requirements: List<String>
+   - tag: List<String> (tag IDs)
+   - locationType: String ("remote" | "onsite" | "hybrid")
+   - availability: String ("full-time" | "part-time" | "weekends" | "flexible")
+   - duration: String?
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+JSON Example:
+{
+  "_id": "507f1f77bcf86cd799439011",
+  "userId": "507f1f77bcf86cd799439012",
+  "title": "Teach you React Native",
+  "description": "I can teach you React Native from scratch...",
+  "postPhoto": "https://...",
+  "requirements": ["Basic JS knowledge", "Laptop"],
+  "tag": ["507f1f77bcf86cd799439013", "507f1f77bcf86cd799439014"],
+  "locationType": "remote",
+  "availability": "flexible",
+  "duration": "2 hours/week",
+  "createdAt": "2024-01-15T10:30:00Z",
+  "updatedAt": "2024-01-15T10:30:00Z"
+}
+
+--- PROPOSAL MODEL ---
+File: lib/features/proposals/data/models/proposal_model.dart (new)
+Fields:
+   - _id: String
+   - senderId: User (embedded)
+   - receiverId: User (embedded)
+   - postId: Post (embedded)
+   - offeredSkill: Post (embedded - the skill sender offers)
+   - message: String
+   - status: String ("pending" | "accepted" | "rejected")
+   - schedules: List<Schedule>? (for accepted/pending)
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+Status Flow:
+   pending → accepted (receiver accepts)
+   pending → rejected (receiver rejects)
+
+--- SCHEDULE MODEL ---
+File: lib/features/proposals/data/models/schedule_model.dart (new)
+Fields:
+   - _id: String
+   - proposalId: String
+   - proposedDate: DateTime
+   - proposedTime: String (e.g., "14:00")
+   - durationMinutes: int
+   - accepted: bool
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+--- TAG MODEL ---
+File: lib/features/posts/data/models/tag_model.dart (new)
+Fields:
+   - _id: String
+   - name: String
+   - tagImage: String? (URL)
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+================================================================================
+                  6. FEATURE IMPLEMENTATION DETAILS
+================================================================================
+
+--- FEATURE: POSTS (EXPLORE SCREEN) ---
+Goal: Display all skill posts, allow create/edit/delete
+
+Screens:
+   a) ExploreScreen (existing) - List all posts in grid
+   b) PostDetailScreen (new) - Full post info with tags
+   c) CreatePostScreen (new) - Form to create new post
+   d) EditPostScreen (new) - Form to edit existing post
+
+Flow:
+   1. On load: Fetch posts from /api/posts
+   2. Display in 2-column grid (existing PostCard)
+   3. Tap card → Navigate to PostDetailScreen
+   4. FAB (+) → Navigate to CreatePostScreen
+   5. Own post: Show edit/delete options in detail screen
+
+Create/Edit Form Fields:
+   - Title (TextField, required)
+   - Description (TextField, multiline, required)
+   - Post Photo (ImagePicker, optional)
+   - Requirements (List<String>, add/remove)
+   - Tags (MultiSelect dropdown, fetch from /api/tags)
+   - Location Type (Dropdown: remote/onsite/hybrid)
+   - Availability (Dropdown: full-time/part-time/weekends/flexible)
+   - Duration (TextField, optional, e.g., "2 hours/week")
+
+--- FEATURE: TAGS ---
+Goal: Fetch and display tags for post filtering and selection
+
+Usage:
+   a) ExploreScreen - Filter posts by tag (future)
+   b) Create/Edit Post - Select multiple tags
+
+Implementation:
+   1. Fetch from /api/tags on app start
+   2. Cache in Hive for offline
+   3. Display as chips in forms
+   4. Store tag IDs in post.tag field
+
+--- FEATURE: PROPOSALS ---
+Goal: Connect with post owners via skill exchange proposals
+
+Screens:
+   a) ProposalScreen (existing placeholder) - List proposals
+   b) ProposalDetailScreen (new) - View proposal with schedules
+   c) SendProposalScreen (new) - Form to send proposal
+
+Flow:
+   1. From PostDetailScreen: Tap "Send Proposal"
+   2. Select skill to offer (own post or description)
+   3. Add message to receiver
+   4. Propose schedule (date, time, duration)
+   5. Submit → POST /api/proposals
+   6. View in ProposalScreen (tabs: Sent/Received)
+
+Proposal List:
+   - Sent: My proposals to others
+   - Received: Others' proposals to me
+
+Actions:
+   - Pending → Accept (PATCH status: accepted)
+   - Pending → Reject (PATCH status: rejected)
+   - Accepted/Pending → View schedules
+
+--- FEATURE: PROFILE ---
+Goal: View and edit user profile
+
+Screens:
+   a) ProfileScreen (existing) - View own profile
+   b) EditProfileScreen (new) - Edit profile form
+   c) UserProfileScreen (new) - View other user's profile
+
+Edit Profile:
+   - PUT /api/auth/update-profile
+   - Fields: fullName, username, profilePicture
+   - Same upload method as auth
+
+================================================================================
+                      7. API ENDPOINTS REFERENCE
+================================================================================
+
+AUTH ENDPOINTS (existing)
+   POST   /api/auth/login              - Login
+   POST   /api/auth/register           - Register
+   PUT    /api/auth/update-profile     - Update profile (auth required)
+   POST   /api/auth/upload             - Upload profile picture
+
+POSTS ENDPOINTS (to add)
+   GET    /api/posts                   - List all posts (public)
+   GET    /api/posts/{id}              - Get post by ID (public)
+   POST   /api/posts                   - Create post (auth required)
+   PUT    /api/posts/{id}              - Update post (auth required, owner only)
+   DELETE /api/posts/{id}              - Delete post (auth required, owner only)
+   GET    /api/posts/my-posts          - Get own posts (auth required)
+
+TAGS ENDPOINTS (to add)
+   GET    /api/tags                    - List all tags (public)
+
+PROPOSALS ENDPOINTS (to add)
+   GET    /api/proposals               - List user's proposals (auth required)
+   GET    /api/proposals/{id}          - Get proposal by ID (auth required)
+   POST   /api/proposals               - Create proposal (auth required)
+   PATCH  /api/proposals/{id}/status   - Update status (auth required)
+
+   Request body for PATCH:
+   { "status": "accepted" | "rejected" }
+
+SCHEDULES ENDPOINTS (to add)
+   GET    /api/schedules               - List user's schedules (auth required)
+   POST   /api/schedules               - Create schedule (auth required)
+
+MESSAGE ENDPOINTS (NOT IMPLEMENTING - disabled feature)
+
+================================================================================
+                        8. FILE STRUCTURE
+================================================================================
+
+Current structure (keep):
+lib/
+├── main.dart                           - App entry point
+├── app.dart                            - MaterialApp configuration
+├── core/
+│   ├── api/
+│   │   ├── api_client.dart             - Dio client with interceptors
+│   │   └── api_endpoints.dart         - API endpoint constants
+│   ├── config/
+│   │   └── environment_config.dart    - Environment configuration
+│   ├── constants/
+│   │   ├── app_constants.dart
+│   │   └── failures.dart
+│   ├── error/
+│   │   ├── exceptions.dart
+│   │   └── failures.dart
+│   ├── extensions/
+│   │   └── context_extensions.dart
+│   ├── providers/
+│   │   └── shared_prefs_provider.dart
+│   ├── services/
+│   │   ├── connectivity/
+│   │   │   └── network_info.dart
+│   │   ├── hive/
+│   │   │   └── hive_service.dart
+│   │   └── storage/
+│   │       ├── storage_service.dart
+│   │       ├── token_service.dart
+│   │       └── user_session_service.dart
+│   ├── theme/
+│   │   └── default_theme_data.dart
+│   └── usecases/
+│       └── app_usecase.dart
+├── features/
+│   ├── auth/
+│   │   ├── data/
+│   │   │   ├── datasources/
+│   │   │   │   ├── auth_datasource.dart
+│   │   │   │   ├── local/
+│   │   │   │   │   └── auth_local_datasource.dart
+│   │   │   │   └── remote/
+│   │   │   │       └── auth_remote_datasource.dart
+│   │   │   ├── models/
+│   │   │   │   ├── auth_api_model.dart
+│   │   │   │   └── auth_hive_model.dart
+│   │   │   └── repositories/
+│   │   │       └── auth_repository.dart
+│   │   ├── domain/
+│   │   │   ├── entities/
+│   │   │   │   └── auth_entity.dart
+│   │   │   ├── repositories/
+│   │   │   │   └── auth_repository.dart
+│   │   │   └── usecases/
+│   │   │       ├── get_current_user_usecase.dart
+│   │   │       ├── login_usecase.dart
+│   │   │       ├── logout_usecase.dart
+│   │   │       ├── register_usecase.dart
+│   │   │       └── upload_image_usecase.dart
+│   │   └── presentation/
+│   │       ├── pages/
+│   │       │   └── auth_screen.dart
+│   │       ├── state/
+│   │       │   └── auth_state.dart
+│   │       ├── view_model/
+│   │       │   └── auth_viewmodel.dart
+│   │       └── widgets/
+│   │           ├── custom_field_text.dart
+│   │           ├── login_form.dart
+│   │           ├── or_divider.dart
+│   │           ├── purple_button.dart
+│   │           ├── sign_up_form.dart
+│   │           └── social_button.dart
+│   ├── dashboard/
+│   │   └── presentation/
+│   │       ├── pages/
+│   │       │   ├── bottom_screen/
+│   │       │   │   ├── explore_screen.dart
+│   │       │   │   ├── message_screen.dart
+│   │       │   │   ├── profile_screen.dart
+│   │       │   │   ├── proposal_screen.dart
+│   │       │   │   └── screen5_screen.dart
+│   │       │   └── home_screen.dart
+│   │       └── widgets/
+│   │           ├── post_card.dart
+│   │           ├── tag.dart
+│   │           └── welcome_card.dart
+│   ├── onboarding/
+│   │   └── ...
+│   └── splash/
+│       └── ...
+└── utils/
+    └── my_colors.dart
+
+NEW FILES TO CREATE:
+
+lib/features/posts/
+├── data/
+│   ├── datasources/
+│   │   ├── posts_datasource.dart
+│   │   ├── local/
+│   │   │   └── posts_local_datasource.dart
+│   │   └── remote/
+│   │       └── posts_remote_datasource.dart
+│   ├── models/
+│   │   ├── post_model.dart
+│   │   └── tag_model.dart
+│   └── repositories/
+│       └── posts_repository.dart
+├── domain/
+│   ├── entities/
+│   │   ├── post_entity.dart
+│   │   └── tag_entity.dart
+│   ├── repositories/
+│   │   └── posts_repository.dart
+│   └── usecases/
+│       ├── get_posts_usecase.dart
+│       ├── get_post_by_id_usecase.dart
+│       ├── create_post_usecase.dart
+│       ├── update_post_usecase.dart
+│       ├── delete_post_usecase.dart
+│       ├── get_my_posts_usecase.dart
+│       └── get_tags_usecase.dart
+└── presentation/
+    ├── providers/
+    │   └── posts_provider.dart
+    ├── pages/
+    │   ├── post_detail_screen.dart
+    │   ├── create_post_screen.dart
+    │   └── edit_post_screen.dart
+    └── widgets/
+        └── post_form.dart
+
+lib/features/proposals/
+├── data/
+│   ├── datasources/
+│   │   ├── proposals_datasource.dart
+│   │   └── remote/
+│   │       └── proposals_remote_datasource.dart
+│   ├── models/
+│   │   ├── proposal_model.dart
+│   │   └── schedule_model.dart
+│   └── repositories/
+│       └── proposals_repository.dart
+├── domain/
+│   ├── entities/
+│   │   ├── proposal_entity.dart
+│   │   └── schedule_entity.dart
+│   ├── repositories/
+│   │   └── proposals_repository.dart
+│   └── usecases/
+│       ├── get_proposals_usecase.dart
+│       ├── get_proposal_by_id_usecase.dart
+│       ├── create_proposal_usecase.dart
+│       ├── accept_proposal_usecase.dart
+│       └── reject_proposal_usecase.dart
+└── presentation/
+    ├── providers/
+    │   └── proposals_provider.dart
+    ├── pages/
+    │   ├── proposal_detail_screen.dart
+    │   └── send_proposal_screen.dart
+    └── widgets/
+        ├── proposal_card.dart
+        └── schedule_card.dart
+
+lib/features/profile/
+├── data/
+│   └── repositories/
+│       └── profile_repository.dart
+├── domain/
+│   └── repositories/
+│       └── profile_repository.dart
+├── presentation/
+│   ├── providers/
+│   │   └── profile_provider.dart
+│   ├── pages/
+│   │   ├── edit_profile_screen.dart
+│   │   └── user_profile_screen.dart
+│   └── widgets/
+│       └── profile_form.dart
+
+================================================================================
+                      9. IMPLEMENTATION ORDER
+================================================================================
+
+PHASE 1: SETUP (do first)
+   1.1 Add packages: json_annotation, json_serializable, build_runner
+   1.2 Update api_endpoints.dart with all new endpoints
+   1.3 Run build_runner to generate .g.dart files
+
+PHASE 2: POSTS (core feature)
+   2.1 Create Post model with json_serializable
+   2.2 Create Tag model with json_serializable
+   2.3 Add Post and Tag endpoints to api_endpoints.dart
+   2.4 Create PostsRemoteDatasource
+   2.5 Create PostsLocalDatasource (Hive)
+   2.6 Create PostsRepository
+   2.7 Create Posts providers
+   2.8 Update ExploreScreen to use real data
+   2.9 Create PostDetailScreen
+   2.10 Create CreatePostScreen with form
+   2.11 Create EditPostScreen
+
+PHASE 3: PROPOSALS (connect users)
+   3.1 Create Proposal model with json_serializable
+   3.2 Create Schedule model with json_serializable
+   3.3 Add Proposal endpoints to api_endpoints.dart
+   3.4 Create ProposalsRemoteDatasource
+   3.5 Create ProposalsRepository
+   3.6 Create Proposals providers
+   3.7 Update ProposalScreen with tabs (Sent/Received)
+   3.8 Create ProposalDetailScreen
+   3.9 Create SendProposalScreen
+
+PHASE 4: PROFILE (enhancement)
+   4.1 Create ProfileRepository
+   4.2 Create ProfileProvider
+   4.3 Create EditProfileScreen
+   4.4 Create UserProfileScreen (view other users)
+   4.5 Add update-profile endpoint to api_endpoints.dart
+
+PHASE 5: TESTING & POLISH
+   5.1 Test offline mode
+   5.2 Add pull-to-refresh
+   5.3 Add loading states
+   5.4 Add error handling UI
+
+================================================================================
+                      10. CODE CONVENTIONS
+================================================================================
+
+NAMING CONVENTIONS
+   - Files: snake_case (post_model.dart)
+   - Classes: PascalCase (class PostModel)
+   - Variables: camelCase (postList)
+   - Constants: SCREAMING_SNAKE_CASE (API_BASE_URL)
+   - Providers: providerNameProvider (postsProvider)
+
+FOLDER STRUCTURE PER FEATURE
+   feature_name/
+   ├── data/
+   │   ├── datasources/
+   │   │   ├── feature_datasource.dart
+   │   │   ├── local/
+   │   │   └── remote/
+   │   ├── models/
+   │   └── repositories/
+   ├── domain/
+   │   ├── entities/
+   │   ├── repositories/
+   │   └── usecases/
+   └── presentation/
+       ├── providers/
+       ├── pages/
+       └── widgets/
+
+MODEL PATTERN
+   - Use json_serializable annotations
+   - Generate with build_runner
+   - Include toJson() and fromJson() that call generated methods
+   - Use factory constructors for fromJson
+
+REPOSITORY PATTERN
+   - Interface in domain/repositories/
+   - Implementation in data/repositories/
+   - Return Either<Failure, T> from dartz
+   - Check network connectivity before remote calls
+   - Cache remote data locally for offline support
+
+PROVIDER PATTERN
+   - Use ref.read() for one-time reads
+   - Use ref.watch() for reactive UI
+   - Use AsyncValue for async data
+   - Handle loading/error states in UI
+
+ERROR HANDLING
+   - Use Failure classes from core/error/failures.dart
+   - Return Left(Failure) on error
+   - Return Right(success) on success
+   - Show user-friendly error messages in UI
+
+================================================================================
+                      11. OPEN QUESTIONS / NOTES
+================================================================================
+
+Q: Post images - what format does backend expect?
+A: TODO - Check backend implementation
+
+Q: How are tags stored in posts - as IDs or names?
+A: TODO - Check API response format (spec says IDs)
+
+Q: What happens when user is offline and tries to create post?
+A: Should cache locally and sync when online (future enhancement)
+
+Q: Proposal accepted - any notification system?
+A: TODO - Not in current scope
+
+Q: Profile - what fields can be edited?
+A: fullName, username, profilePicture (based on update-profile endpoint)
+
+
+backend project path: /home/atomu/Documents/developer/API/
+================================================================================
+                              END OF DOCUMENT
+================================================================================
