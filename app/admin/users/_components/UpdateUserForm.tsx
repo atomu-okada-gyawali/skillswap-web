@@ -5,8 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { handleUpdateUser } from "@/lib/actions/admin/user-actions";
-import Image from "next/image";
+import { handleUserUpdate } from "@/lib/actions/admin/user-actions";
+import SafeImage from "@/app/_components/SafeImage";
 import { Upload, X, ArrowLeft, Save } from "lucide-react";
 
 export default function UpdateUserForm({ user }: { user: any }) {
@@ -29,7 +29,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageChange = (
+  const onImageChange = (
     file: File | undefined,
     onChange: (file: File | undefined) => void,
   ) => {
@@ -45,7 +45,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
     onChange(file);
   };
 
-  const handleDismissImage = (onChange?: (file: File | undefined) => void) => {
+  const onDismissImage = (onChange?: (file: File | undefined) => void) => {
     setPreviewImage(null);
     onChange?.(undefined);
     if (fileInputRef.current) {
@@ -56,20 +56,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
   const onSubmit = async (data: Partial<UserData>) => {
     startTransition(async () => {
       try {
-        const formData = new FormData();
-        if (data.fullName) {
-          formData.append("fullName", data.fullName);
-        }
-        if (data.email) {
-          formData.append("email", data.email);
-        }
-        if (data.username) {
-          formData.append("username", data.username);
-        }
-        if (data.profilePicture) {
-          formData.append("profilePicture", data.profilePicture);
-        }
-        const response = await handleUpdateUser(user._id, formData);
+        const response = await handleUserUpdate(user._id, data);
 
         if (!response.success) {
           throw new Error(response.message || "Update failed");
@@ -122,7 +109,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
                   render={({ field: { onChange } }) => (
                     <button
                       type="button"
-                      onClick={() => handleDismissImage(onChange)}
+                      onClick={() => onDismissImage(onChange)}
                       className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                     >
                       <X className="w-3 h-3" />
@@ -131,7 +118,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
                 />
               </div>
             ) : user.profilePictureUrl ? (
-              <Image
+              <SafeImage
                 src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.profilePictureUrl}`}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover ring-4 ring-c1"
@@ -156,7 +143,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
                   type="file"
                   accept=".jpg,.jpeg,.png,.webp"
                   onChange={(e) =>
-                    handleImageChange(e.target.files?.[0], onChange)
+                    onImageChange(e.target.files?.[0], onChange)
                   }
                   className="block w-full text-sm text-c7 opacity-60 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-c5 file:text-white file:cursor-pointer file:transition-opacity hover:file:opacity-90"
                 />
@@ -171,7 +158,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
             <label className={labelClass}>Full Name</label>
             <input
               {...register("fullName")}
-              placeholder="Enter full name"
+              placeholder="default"
               className={inputClass}
             />
             {errors.fullName && (
@@ -184,7 +171,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
             <input
               {...register("email")}
               type="email"
-              placeholder="Enter email address"
+              placeholder="default"
               className={inputClass}
             />
             {errors.email && (
@@ -196,7 +183,7 @@ export default function UpdateUserForm({ user }: { user: any }) {
             <label className={labelClass}>Username</label>
             <input
               {...register("username")}
-              placeholder="Enter username"
+              placeholder="default"
               className={inputClass}
             />
             {errors.username && (

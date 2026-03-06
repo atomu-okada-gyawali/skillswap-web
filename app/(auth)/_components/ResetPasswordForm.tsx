@@ -48,7 +48,7 @@ const ResetPasswordForm = (
                     autoComplete="new-password"
                     className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
                     {...register("newPassword")}
-                    placeholder="••••••"
+                    placeholder="default"
                 />
                 {errors.newPassword?.message && (
                     <p className="text-xs text-red-600">{errors.newPassword.message}</p>
@@ -63,7 +63,7 @@ const ResetPasswordForm = (
                     autoComplete="new-password"
                     className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
                     {...register("confirmNewPassword")}
-                    placeholder="••••••"
+                    placeholder="default"
                 />
                 {errors.confirmNewPassword?.message && (
                     <p className="text-xs text-red-600">{errors.confirmNewPassword.message}</p>

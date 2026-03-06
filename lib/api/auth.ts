@@ -2,6 +2,21 @@ import { LoginData, RegisterData } from "@/app/(auth)/schema"
 import axios from "./axios"
 import { API } from "./endpoints"
 
+export const updateUserProfile = async (userData: { fullName?: string; username?: string; profilePicture?: File }) => {
+    try {
+        const formData = new FormData();
+        if (userData.fullName) formData.append("fullName", userData.fullName);
+        if (userData.profilePicture) formData.append("profilePicture", userData.profilePicture);
+        
+        const response = await axios.put(API.AUTH.UPDATEPROFILE, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        return response.data;
+    } catch (error: Error | any) {
+        throw new Error(error.response?.data?.message || error.message || "Update profile failed");
+    }
+};
+
 
 export const register = async (registerData: RegisterData) => {
     try {

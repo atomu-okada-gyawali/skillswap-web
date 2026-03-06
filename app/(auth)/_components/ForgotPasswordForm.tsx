@@ -53,7 +53,7 @@ const ForgetPasswordForm = () => {
           autoComplete="email"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("email")}
-          placeholder="you@example.com"
+          placeholder="default"
         />
         {errors.email?.message && (
           <p className="text-xs text-red-600">{errors.email.message}</p>

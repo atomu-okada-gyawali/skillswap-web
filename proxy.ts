@@ -4,11 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 const publicRoutes = [
   "/login",
   "/register",
-  "/forget-password",
+  "/forgot-password",
   "/reset-password",
 ];
-const adminRoutes = ["/admin"];
-const userRoutes = ["/user"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -18,34 +16,33 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route),
   );
-  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
-  const isUserRoute = userRoutes.some((route) => pathname.startsWith(route));
 
-  if (!token && !isPublicRoute) {
+  if (!token && !isPublicRoute && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (token && user) {
-    if (isAdminRoute && user.role !== "admin") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-    if (isUserRoute && user.role !== "user" && user.role !== "admin") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+  if (token && isPublicRoute) {
+    return NextResponse.redirect(new URL("/dashboard/explore", request.url));
   }
 
-  if (isPublicRoute && token) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (token && user) {
+    if (pathname.startsWith("/admin") && user.role !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard/explore", request.url));
+    }
   }
 
   return NextResponse.next();
 }
+
 export const config = {
   matcher: [
-    // what routes to protect/match
+    "/dashboard/:path*",
+    "/dashboard",
     "/admin/:path*",
-    "/user/:path*",
+    "/admin",
     "/login",
     "/register",
+    "/forgot-password",
+    "/reset-password",
   ],
 };

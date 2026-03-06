@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "next/image";
+import SafeImage from "@/app/_components/SafeImage";
 import Link from "next/link";
 
 const SkillSwapPage: React.FC = () => {
@@ -19,7 +19,7 @@ const SkillSwapPage: React.FC = () => {
           </div>
           <div className="md:w-1/2 mt-10 md:mt-0 flex justify-center">
             <div className="relative w-full max-w-2xl aspect-[729/533]">
-              <Image
+              <SafeImage
                 src="/images/homepage_art.png"
                 alt="Homepage Art"
                 fill

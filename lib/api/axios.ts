@@ -1,13 +1,10 @@
 import axios from 'axios';
 import { getAuthToken } from '../cookies';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050';
+export const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050';
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
 });
 
 axiosInstance.interceptors.request.use(

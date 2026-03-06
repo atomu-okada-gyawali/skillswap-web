@@ -8,6 +8,23 @@ import {
 } from "@/lib/api/admin/user";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+export const handleUserSearch = async (searchTerm: string, size: number) => {
+  const params = new URLSearchParams();
+  params.set("page", "1");
+  params.set("size", size.toString());
+  if (searchTerm) params.set("search", searchTerm);
+  redirect(`/admin/users?${params.toString()}`);
+};
+
+export const handleUserPagination = async (page: number, size: number, search?: string) => {
+  const params = new URLSearchParams();
+  params.set("page", page.toString());
+  params.set("size", size.toString());
+  if (search) params.set("search", search);
+  redirect(`/admin/users?${params.toString()}`);
+};
 
 export const handleCreateUser = async (data: FormData) => {
   try {
@@ -126,4 +143,28 @@ export const handleDeleteUser = async (id: string) => {
       message: error.message || "Delete user action failed",
     };
   }
+};
+
+export const handleUserSubmission = async (data: any) => {
+  const formData = new FormData();
+  formData.append("email", data.email);
+  formData.append("username", data.username);
+  formData.append("password", data.password);
+  formData.append("confirmPassword", data.confirmPassword);
+  if (data.fullName) formData.append("fullName", data.fullName);
+  if (data.profilePicture)
+    formData.append("profilePicture", data.profilePicture);
+  if (data.role) formData.append("role", data.role);
+  return await handleCreateUser(formData);
+};
+
+export const handleUserUpdate = async (id: string, data: any) => {
+  const formData = new FormData();
+  if (data.email) formData.append("email", data.email);
+  if (data.username) formData.append("username", data.username);
+  if (data.fullName) formData.append("fullName", data.fullName);
+  if (data.profilePicture)
+    formData.append("profilePicture", data.profilePicture);
+  if (data.role) formData.append("role", data.role);
+  return await handleUpdateUser(id, formData);
 };

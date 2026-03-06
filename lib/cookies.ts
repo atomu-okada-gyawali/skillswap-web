@@ -6,6 +6,8 @@ interface UserData {
   _id: string;
   email: string;
   username: string;
+  fullName: string;
+  profilePicture?: string;
   role: string;
   createdAt: string;
   updatedAt: string;
@@ -16,6 +18,10 @@ export const setAuthToken = async (token: string) => {
   cookieStore.set({
     name: "auth_token",
     value: token,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
   });
 };
 export const getAuthToken = async () => {
@@ -27,6 +33,10 @@ export const setUserData = async (userData: UserData) => {
   cookieStore.set({
     name: "user_data",
     value: JSON.stringify(userData),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
   });
 };
 export const getUserData = async (): Promise<UserData | null> => {

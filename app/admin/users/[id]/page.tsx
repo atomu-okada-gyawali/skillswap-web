@@ -1,6 +1,6 @@
 import { handleGetOneUser } from "@/lib/actions/admin/user-actions";
 import Link from "next/link";
-import Image from "next/image";
+import SafeImage from "@/app/_components/SafeImage";
 import { ArrowLeft, User, Mail, Shield, Calendar, Hash } from "lucide-react";
 
 export default async function Page({
@@ -42,7 +42,7 @@ export default async function Page({
           <div className="bg-white rounded-xl shadow-sm border border-c2 p-6 text-center">
             <div className="relative w-32 h-32 mx-auto mb-4">
               {user.profilePicture ? (
-                <Image
+                <SafeImage
                   src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${user.profilePicture}`}
                   alt={user.fullName || "User"}
                   fill

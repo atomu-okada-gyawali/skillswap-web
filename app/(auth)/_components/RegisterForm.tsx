@@ -18,7 +18,7 @@ export default function RegisterForm() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
-    mode: "onSubmit",
+    mode: "onChange",
   });
 
   const [pending, setTransition] = useTransition();
@@ -56,7 +56,7 @@ export default function RegisterForm() {
           autoComplete="username"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("username")}
-          placeholder="username"
+          placeholder="default"
         />
         {errors.username?.message && (
           <p className="text-xs text-red-600">{errors.username.message}</p>
@@ -73,7 +73,7 @@ export default function RegisterForm() {
           autoComplete="email"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("email")}
-          placeholder="you@example.com"
+          placeholder="default"
         />
         {errors.email?.message && (
           <p className="text-xs text-red-600">{errors.email.message}</p>
@@ -89,7 +89,7 @@ export default function RegisterForm() {
           autoComplete="full name"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("fullName")}
-          placeholder="Full Name"
+          placeholder="default"
         />
         {errors.fullName?.message && (
           <p className="text-xs text-red-600">{errors.fullName.message}</p>
@@ -106,7 +106,7 @@ export default function RegisterForm() {
           autoComplete="new-password"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("password")}
-          placeholder="••••••"
+          placeholder="default"
         />
         {errors.password?.message && (
           <p className="text-xs text-red-600">{errors.password.message}</p>
@@ -123,7 +123,7 @@ export default function RegisterForm() {
           autoComplete="new-password"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("confirmPassword")}
-          placeholder="••••••"
+          placeholder="default"
         />
         {errors.confirmPassword?.message && (
           <p className="text-xs text-red-600">

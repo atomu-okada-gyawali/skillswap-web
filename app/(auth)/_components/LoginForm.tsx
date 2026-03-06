@@ -16,7 +16,7 @@ export default function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
-    mode: "onSubmit",
+    mode: "onChange",
   });
   const [pending, setTransition] = useTransition();
 
@@ -34,7 +34,7 @@ export default function LoginForm() {
           if (role === "admin") {
             router.push("/admin/users");
           } else {
-            router.push("/dashboard");
+            router.push("/dashboard/explore");
           }
         } else {
           toast.error("Login failed");
@@ -57,7 +57,7 @@ export default function LoginForm() {
           autoComplete="email"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("email")}
-          placeholder="you@email.com"
+          placeholder="default"
         />
         {errors.email?.message && (
           <p className="text-xs text-red-600">{errors.email.message}</p>
@@ -74,7 +74,7 @@ export default function LoginForm() {
           autoComplete="current-password"
           className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
           {...register("password")}
-          placeholder="••••••"
+          placeholder="default"
         />
         {errors.password?.message && (
           <p className="text-xs text-red-600">{errors.password.message}</p>
