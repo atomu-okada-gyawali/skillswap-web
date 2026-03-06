@@ -32,7 +32,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0">
-      {/* Navigation */}
+
       <nav className="flex-1 p-4 pt-12 space-y-1">
         <p className="px-3 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
           Menu

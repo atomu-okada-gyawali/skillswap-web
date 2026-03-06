@@ -7,6 +7,7 @@ import { useChat } from "@/context/ChatContext";
 import { handleGetOneChat } from "@/lib/actions/chat-actions";
 import { ArrowLeft, Send, User } from "lucide-react";
 import Link from "next/link";
+import { BASE_URL } from "@/lib/api/axios";
 
 interface Proposal {
   _id: string;
@@ -84,13 +85,6 @@ export default function ChatPage() {
     setSending(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   const getOtherUser = () => {
     if (!chatData?.proposalId || !user?._id) return null;
     const proposal = chatData.proposalId;
@@ -122,7 +116,7 @@ export default function ChatPage() {
         <div className="flex items-center gap-3">
           {otherUser?.profilePicture ? (
             <img
-              src={otherUser.profilePicture}
+              src={BASE_URL + otherUser.profilePicture}
               alt={otherUser.username}
               className="w-10 h-10 rounded-full object-cover"
             />
@@ -132,7 +126,9 @@ export default function ChatPage() {
             </div>
           )}
           <div>
-            <h2 className="font-semibold text-gray-900">{otherUser?.username}</h2>
+            <h2 className="font-semibold text-gray-900">
+              {otherUser?.username}
+            </h2>
             <p className="text-sm text-gray-500">
               {chatData.proposalId.postId?.title || "Chat"}
             </p>
@@ -189,7 +185,6 @@ export default function ChatPage() {
             type="text"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
-            onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-c5"
             disabled={sending}

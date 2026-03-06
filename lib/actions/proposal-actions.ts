@@ -162,26 +162,17 @@ export const handleRejectProposal = async (id: string) => {
   return await handleUpdateProposalStatus(id, "rejected");
 };
 
-export const handleCompleteProposalSubmission = async (
-  proposalData: FormData,
-  scheduleData: {
-    proposedDate: string;
-    proposedTime: string;
-    durationMinutes: number;
-  },
-) => {
+export const handleCompleteProposalSubmission = async (proposalData: {
+  receiverId: string;
+  postId: string;
+  offeredSkill: string;
+  message: string;
+  proposedDate: string;
+  proposedTime: string;
+  durationMinutes: number;
+}) => {
   try {
-    // Convert FormData and scheduleData into a single object for the unified backend endpoint
-    const unifiedData: any = {};
-    proposalData.forEach((value, key) => {
-      unifiedData[key] = value;
-    });
-
-    unifiedData.proposedDate = scheduleData.proposedDate;
-    unifiedData.proposedTime = scheduleData.proposedTime;
-    unifiedData.durationMinutes = scheduleData.durationMinutes;
-
-    const result = await submitCompleteProposal(unifiedData);
+    const result = await submitCompleteProposal(proposalData);
 
     if (result.success) {
       revalidatePath("/dashboard/proposals");

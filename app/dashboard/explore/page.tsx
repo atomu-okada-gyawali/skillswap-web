@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import {
   Search,
-  Filter,
   Plus,
   ChevronLeft,
   ChevronRight,
@@ -139,29 +138,9 @@ export default function Dashboard() {
               />
             </div>
 
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-full text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <Filter className="w-5 h-5" />
-              <span className="hidden sm:inline">Filter</span>
-            </button>
 
-            <button
-              onClick={() =>
-                setSortBy(
-                  sortBy === "recent"
-                    ? "popular"
-                    : sortBy === "popular"
-                      ? "title"
-                      : "recent",
-                )
-              }
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-full text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <SlidersHorizontal className="w-5 h-5" />
-              <span className="hidden sm:inline capitalize">{sortBy}</span>
-            </button>
+
+
 
             <button
               onClick={() => setIsCreatePostOpen(true)}
@@ -173,29 +152,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {showFilters && (
-          <div className="mb-6 p-4 bg-white rounded-2xl border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-3">Filters</h3>
-            <div className="flex flex-wrap gap-2">
-              {[
-                "Design",
-                "Music",
-                "Tech",
-                "Cooking",
-                "Art",
-                "Fitness",
-                "Marketing",
-              ].map((tag) => (
-                <button
-                  key={tag}
-                  className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-c4 hover:text-c5-700 transition-colors"
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {loading || favoritesLoading ? (

@@ -6,6 +6,7 @@ import { handleGetAllChats } from "@/lib/actions/chat-actions";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { MessageCircle, User, Clock } from "lucide-react";
+import { BASE_URL } from "@/lib/api/axios";
 
 interface Proposal {
   _id: string;
@@ -80,9 +81,7 @@ export default function MessagesIndexPage() {
           <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
             <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 text-lg">No conversations yet</p>
-            <p className="text-gray-400 text-sm mt-1">
-              
-            </p>
+            <p className="text-gray-400 text-sm mt-1"></p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -99,7 +98,7 @@ export default function MessagesIndexPage() {
                   <div className="flex items-center gap-4">
                     {otherUser.profilePicture ? (
                       <img
-                        src={otherUser.profilePicture}
+                        src={BASE_URL + otherUser.profilePicture}
                         alt={otherUser.username}
                         className="w-12 h-12 rounded-full object-cover"
                       />
@@ -114,10 +113,13 @@ export default function MessagesIndexPage() {
                           {otherUser.username}
                         </h3>
                         <span className="text-xs text-gray-500">
-                          {new Date(chat.updatedAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
+                          {new Date(chat.updatedAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                            },
+                          )}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500 truncate">

@@ -100,15 +100,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
       try {
         const { createMessage } = await import("@/lib/api/message");
-        const response = await createMessage({
+        await createMessage({
           chatId: activeChat._id,
           senderId: user._id,
           content: content.trim(),
         });
-
-        if (response.success && response.data) {
-          setMessages((prev) => [...prev, response.data]);
-        }
       } catch (error) {
         console.error("Failed to send message:", error);
       }

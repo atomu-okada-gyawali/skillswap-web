@@ -56,19 +56,15 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
   const onSubmit = async (data: ProposalFormData) => {
     const submittingToastId = toast.loading("Submitting your proposal...");
     try {
-      const proposalFormData = new FormData();
-      proposalFormData.append("receiverId", receiverId);
-      proposalFormData.append("postId", postId);
-      proposalFormData.append("offeredSkill", data.offeredSkill);
-      proposalFormData.append("message", data.message);
-
-      const scheduleData = {
+      const result = await handleCompleteProposalSubmission({
+        receiverId,
+        postId,
+        offeredSkill: data.offeredSkill,
+        message: data.message,
         proposedDate: data.proposedDate,
         proposedTime: data.proposedTime,
         durationMinutes: data.durationMinutes,
-      };
-
-      const result = await handleCompleteProposalSubmission(proposalFormData, scheduleData);
+      });
 
       if (result.success) {
         toast.update(submittingToastId, { render: result.message, type: "success", isLoading: false, autoClose: 3000 });
