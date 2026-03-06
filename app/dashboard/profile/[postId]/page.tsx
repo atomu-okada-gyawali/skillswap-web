@@ -52,7 +52,7 @@ export default function EditPostPage({
     const init = async () => {
       const { postId: id } = await params;
       setPostId(id);
-      
+
       const fetchTags = async () => {
         const result = await handleGetAllTags();
         if (result.success && result.data) {
@@ -76,6 +76,7 @@ export default function EditPostPage({
             setValue("availability", postData.availability);
             setValue("duration", postData.duration || "");
             setValue("tag", postData.tags || []);
+            setValue("requirements", postData.requirements || []);
           }
         } catch (error) {
           toast.error("Failed to load post");
@@ -129,7 +130,9 @@ export default function EditPostPage({
       formData.append("locationType", data.locationType);
       formData.append("availability", data.availability);
       if (data.duration) formData.append("duration", data.duration);
-      if (requirements.length > 0) formData.append("requirements", JSON.stringify(requirements));
+      if (requirements.length > 0) {
+        requirements.forEach((req) => formData.append("requirements", req));
+      }
       if (selectedTagId) formData.append("tag", selectedTagId);
       if (selectedFile) formData.append("postPhoto", selectedFile);
 
@@ -185,7 +188,9 @@ export default function EditPostPage({
                 placeholder="What skill do you want to teach?"
               />
               {errors.title && (
-                <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.title.message}
+                </p>
               )}
             </div>
 
@@ -200,7 +205,9 @@ export default function EditPostPage({
                 placeholder="Describe your skill and what you're looking to learn..."
               />
               {errors.description && (
-                <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.description.message}
+                </p>
               )}
             </div>
 
@@ -270,7 +277,9 @@ export default function EditPostPage({
                 <input
                   value={requirement}
                   onChange={(e) => setRequirement(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addRequirement())}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addRequirement())
+                  }
                   className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-c5 focus:border-c5 outline-none transition-colors"
                   placeholder="Add a requirement"
                 />
@@ -314,7 +323,8 @@ export default function EditPostPage({
                       key={tag._id}
                       type="button"
                       onClick={() => {
-                        const newTagId = selectedTagId === tag._id ? "" : tag._id;
+                        const newTagId =
+                          selectedTagId === tag._id ? "" : tag._id;
                         setSelectedTagId(newTagId);
                         setValue("tag", newTagId ? [newTagId] : []);
                       }}
@@ -348,7 +358,9 @@ export default function EditPostPage({
                   <option value="hybrid">Hybrid</option>
                 </select>
                 {errors.locationType && (
-                  <p className="mt-1 text-sm text-red-500">{errors.locationType.message}</p>
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.locationType.message}
+                  </p>
                 )}
               </div>
 
@@ -367,7 +379,9 @@ export default function EditPostPage({
                   <option value="flexible">Flexible</option>
                 </select>
                 {errors.availability && (
-                  <p className="mt-1 text-sm text-red-500">{errors.availability.message}</p>
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.availability.message}
+                  </p>
                 )}
               </div>
             </div>

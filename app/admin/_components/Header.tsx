@@ -1,7 +1,9 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, Menu } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 import { useState } from "react";
+import SafeImage from "@/app/_components/SafeImage";
+import { BASE_URL } from "@/lib/api/axios";
 
 export default function Header() {
   const { logout, user } = useAuth();
@@ -26,11 +28,21 @@ export default function Header() {
               onClick={() => setShowDropdown(!showDropdown)}
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-c1 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-c5 flex items-center justify-center text-white text-sm font-medium">
-                {user?.email?.charAt(0).toUpperCase() || "A"}
-              </div>
+              {user?.profilePicture ? (
+                <SafeImage
+                  src={BASE_URL + user.profilePicture}
+                  alt={user.fullName || user.username || "Admin"}
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-c5 flex items-center justify-center text-white text-sm font-medium">
+                  {user?.fullName?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || "A"}
+                </div>
+              )}
               <span className="hidden sm:block text-sm font-medium text-c7">
-                {user?.email || "Admin"}
+                {user?.fullName || user?.username || "Admin"}
               </span>
             </button>
 
@@ -40,10 +52,15 @@ export default function Header() {
                   className="fixed inset-0 z-10"
                   onClick={() => setShowDropdown(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-c2 py-1 z-20">
-                  <div className="px-4 py-2 border-b border-c2">
-                    <p className="text-sm font-medium text-c7">Signed in as</p>
-                    <p className="text-xs text-c7 truncate">{user?.email || "Admin"}</p>
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-c2 py-1 z-20">
+                  <div className="px-4 py-3 border-b border-c2">
+                    <p className="text-sm font-medium text-c7">{user?.fullName || user?.username || "Admin"}</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    {user?.role && (
+                      <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded">
+                        {user.role}
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => {

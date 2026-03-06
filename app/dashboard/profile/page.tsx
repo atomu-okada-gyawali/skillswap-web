@@ -8,6 +8,7 @@ import Link from "next/link";
 import { User, MapPin, Clock, Edit, Trash2, Camera, X } from "lucide-react";
 import { BASE_URL } from "@/lib/api/axios";
 import SafeImage from "@/app/_components/SafeImage";
+import DeleteModal from "@/app/_components/DeleteModal";
 import { toast } from "react-toastify";
 
 interface Post {
@@ -23,10 +24,12 @@ interface Post {
 }
 
 export default function ProfilePage() {
-  const { user, checkAuth } = useAuth();
+  const { user, setUser, checkAuth } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [formData, setFormData] = useState({
@@ -46,16 +49,22 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const onDeletePost = async (postId: string) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+  const onDeletePost = (postId: string) => {
+    setPostToDelete(postId);
+    setDeleteModalOpen(true);
+  };
 
-    setDeletingId(postId);
-    const result = await handleDeletePost(postId);
+  const confirmDelete = async () => {
+    if (!postToDelete) return;
+    
+    setDeleteModalOpen(false);
+    setDeletingId(postToDelete);
+    const result = await handleDeletePost(postToDelete);
     setDeletingId(null);
 
     if (result.success) {
       toast.success("Post deleted successfully");
-      setPosts(posts.filter((p) => p._id !== postId));
+      setPosts(posts.filter((p) => p._id !== postToDelete));
     } else {
       toast.error(result.message || "Failed to delete post");
     }
@@ -67,7 +76,6 @@ export default function ProfilePage() {
 
     const result = await handleUpdateProfile({
       fullName: formData.fullName,
-      username: formData.username,
       profilePicture: profilePicture || undefined,
     });
 
@@ -75,7 +83,9 @@ export default function ProfilePage() {
 
     if (result.success) {
       toast.success("Profile updated successfully");
-      await checkAuth();
+      if (result.data) {
+        setUser(result.data);
+      }
       setIsEditing(false);
       setProfilePicture(null);
       setPreviewUrl(null);
@@ -120,7 +130,11 @@ export default function ProfilePage() {
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-c3 to-c4 flex items-center justify-center overflow-hidden">
                 {previewUrl ? (
-                  <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
                 ) : user?.profilePicture ? (
                   <SafeImage
                     src={BASE_URL + user.profilePicture}
@@ -272,7 +286,11 @@ export default function ProfilePage() {
                 <div className="relative">
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-c3 to-c4 flex items-center justify-center overflow-hidden">
                     {previewUrl ? (
-                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
                     ) : user?.profilePicture ? (
                       <SafeImage
                         src={BASE_URL + user.profilePicture}
@@ -318,7 +336,9 @@ export default function ProfilePage() {
                 <input
                   type="text"
                   value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-c5"
                   required
                 />
@@ -348,6 +368,13 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Post"
+        description="Are you sure you want to delete this post? This action cannot be undone."
+      />
     </div>
   );
 }

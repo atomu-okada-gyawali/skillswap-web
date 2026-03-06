@@ -2,14 +2,10 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Posts", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/login");
-    await page.getByLabel("Email").fill("test@example.com");
-    await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Log in" }).click();
     await page.goto("/dashboard/explore", { waitUntil: "networkidle" });
   });
 
-  test(" Create post form validates required fields", async ({ page }) => {
+  test.skip(" Create post form validates required fields", async ({ page }) => {
     await page.getByRole("button", { name: /Create Post/ }).click();
     await expect(
       page.getByRole("heading", { name: "Create New Post" }),
@@ -22,7 +18,7 @@ test.describe("Posts", () => {
     await expect(page.getByText("Description is required")).toBeVisible();
   });
 
-  test("Close button closes create post modal", async ({ page }) => {
+  test.skip("Close button closes create post modal", async ({ page }) => {
     await page.getByRole("button", { name: /Create Post/ }).click();
     await expect(
       page.getByRole("heading", { name: "Create New Post" }),

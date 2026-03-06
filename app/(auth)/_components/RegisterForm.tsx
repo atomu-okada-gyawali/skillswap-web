@@ -18,7 +18,7 @@ export default function RegisterForm() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
-    mode: "onSubmit",
+    mode: "onChange",
   });
 
   const [pending, setTransition] = useTransition();

@@ -64,7 +64,7 @@ export default function Sidebar() {
           <div className="flex items-center gap-3">
             {user?.profilePicture ? (
               <SafeImage
-                src={BASE_URL + user.profilePicture}
+                src={BASE_URL+user.profilePicture}
                 alt={user.fullName || "User"}
                 width={40}
                 height={40}

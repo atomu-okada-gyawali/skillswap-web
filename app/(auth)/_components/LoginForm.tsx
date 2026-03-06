@@ -16,7 +16,7 @@ export default function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
-    mode: "onSubmit",
+    mode: "onChange",
   });
   const [pending, setTransition] = useTransition();
 

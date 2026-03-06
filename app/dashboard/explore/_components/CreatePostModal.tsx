@@ -50,6 +50,7 @@ export default function CreatePostModal({
     formState: { errors, isSubmitting },
   } = useForm<PostFormData>({
     resolver: zodResolver(PostSchema),
+    mode: "onChange",
     defaultValues: {
       title: "",
       description: "",
