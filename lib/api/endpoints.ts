@@ -38,6 +38,7 @@ export const API = {
 
   PROPOSAL: {
     CREATE: "/api/proposals/",
+    SUBMIT_COMPLETE: "/api/proposals/submit-complete",
     GET_ALL: "/api/proposals/",
     GET_ONE: (proposalId: string) => `/api/proposals/${proposalId}`,
     UPDATE: (proposalId: string) => `/api/proposals/${proposalId}`,
@@ -81,5 +82,8 @@ export const API = {
     GET_ALL: "/api/favorites/",
     CHECK: (postId: string) => `/api/favorites/check/${postId}`,
     GET_POST_IDS: "/api/favorites/post-ids",
+  },
+  ANALYTICS: {
+    GET_ADMIN_STATS: "/api/analytics/admin",
   },
 };

@@ -82,3 +82,19 @@ export const deleteProposal = async (id: string) => {
     );
   }
 };
+
+export const submitCompleteProposal = async (proposalData: any) => {
+  try {
+    const response = await axios.post(
+      API.PROPOSAL.SUBMIT_COMPLETE,
+      proposalData,
+    );
+    return response.data;
+  } catch (error: Error | any) {
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Submit complete proposal failed",
+    );
+  }
+};

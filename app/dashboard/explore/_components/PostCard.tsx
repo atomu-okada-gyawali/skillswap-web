@@ -7,7 +7,7 @@ interface SkillCardProps {
   id: string;
   title: string;
   authorName: string;
-  tags: string[];
+  tag?: string;
   imageUrl?: string;
   avatarUrl?: string;
   isFavorited?: boolean;
@@ -18,7 +18,7 @@ const PostCard: React.FC<SkillCardProps> = ({
   id,
   title,
   authorName,
-  tags = [],
+  tag,
   imageUrl,
   avatarUrl,
   isFavorited = false,
@@ -83,21 +83,15 @@ const PostCard: React.FC<SkillCardProps> = ({
             <p className="text-xs text-gray-500 mt-0.5">By {authorName}</p>
 
             <div className="mt-2">
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-0.5 bg-gray-50 border border-gray-100 text-gray-600 text-xs font-medium rounded-full"
-                  >
-                    {skill}
-                  </span>
-                ))}
-                {tags.length === 0 && (
-                  <span className="text-xs text-gray-400 italic">
-                    No skills listed
-                  </span>
-                )}
-              </div>
+              {tag ? (
+                <span className="px-2 py-0.5 bg-gray-50 border border-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                  {tag}
+                </span>
+              ) : (
+                <span className="text-xs text-gray-400 italic">
+                  No tag listed
+                </span>
+              )}
             </div>
           </div>
         </div>

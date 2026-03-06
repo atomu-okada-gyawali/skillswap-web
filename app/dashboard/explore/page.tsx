@@ -23,6 +23,11 @@ import { toast } from "react-toastify";
 
 const ITEMS_PER_PAGE = 6;
 
+interface Tag {
+  _id: string;
+  name: string;
+}
+
 interface Post {
   _id: string;
   userId: {
@@ -31,7 +36,7 @@ interface Post {
     _id: string;
     fullName: string;
   };
-  tags: string[];
+  tag: Tag | null;
   title: string;
   description: string;
   postPhoto: string;
@@ -201,7 +206,7 @@ export default function Dashboard() {
             posts.map((post) => (
               <PostCard
                 key={post._id}
-                tags={post.tags}
+                tag={post.tag?.name}
                 id={post._id}
                 title={post.title}
                 authorName={post.userId.username}

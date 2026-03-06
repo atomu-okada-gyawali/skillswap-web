@@ -71,12 +71,8 @@ export default function ProposalForm({ postId, receiverId }: ProposalFormProps) 
       const result = await handleCompleteProposalSubmission(proposalFormData, scheduleData);
 
       if (result.success) {
-        if (result.warning) {
-          toast.update(submittingToastId, { render: result.message, type: "warning", isLoading: false, autoClose: 3000 });
-        } else {
-          toast.update(submittingToastId, { render: result.message, type: "success", isLoading: false, autoClose: 3000 });
-          reset();
-        }
+        toast.update(submittingToastId, { render: result.message, type: "success", isLoading: false, autoClose: 3000 });
+        reset();
       } else {
         toast.update(submittingToastId, { render: result.message || "Failed to submit proposal", type: "error", isLoading: false, autoClose: 3000 });
       }

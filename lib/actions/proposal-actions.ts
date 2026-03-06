@@ -6,6 +6,7 @@ import {
   deleteProposal,
   getAllProposals,
   getProposalById,
+  submitCompleteProposal,
   updateProposal,
   updateProposalStatus,
 } from "../api/proposal";
@@ -170,47 +171,31 @@ export const handleCompleteProposalSubmission = async (
   },
 ) => {
   try {
+    // Convert FormData and scheduleData into a single object for the unified backend endpoint
+    const unifiedData: any = {};
+    proposalData.forEach((value, key) => {
+      unifiedData[key] = value;
+    });
 
-    const proposalRes = await createProposal(proposalData);
+    unifiedData.proposedDate = scheduleData.proposedDate;
+    unifiedData.proposedTime = scheduleData.proposedTime;
+    unifiedData.durationMinutes = scheduleData.durationMinutes;
 
-    if (!proposalRes.success || !proposalRes.data?._id) {
+    const result = await submitCompleteProposal(unifiedData);
+
+    if (result.success) {
+      revalidatePath("/dashboard/proposals");
       return {
-        success: false,
-        message: proposalRes.message || "Failed to create proposal",
+        success: true,
+        message: "Proposal submitted successfully!",
+        data: result.data,
       };
     }
 
-    const proposalId = proposalRes.data._id;
-
-    const scheduleFormData = new FormData();
-    scheduleFormData.append("proposalId", proposalId);
-    scheduleFormData.append("proposedDate", scheduleData.proposedDate);
-    scheduleFormData.append("proposedTime", scheduleData.proposedTime);
-    scheduleFormData.append(
-      "durationMinutes",
-      scheduleData.durationMinutes.toString(),
-    );
-
-    const scheduleRes = await createSchedule(scheduleFormData);
-
-
-
-    revalidatePath("/dashboard/proposals");
-
-    if (scheduleRes.success) {
-      return {
-        success: true,
-        message: "Proposal and schedule created successfully!",
-        data: proposalRes.data,
-      };
-    } else {
-      return {
-        success: true,
-        message: "Proposal created but failed to create schedule",
-        data: proposalRes.data,
-        warning: true,
-      };
-    }
+    return {
+      success: false,
+      message: result.message || "Failed to submit proposal",
+    };
   } catch (error: Error | any) {
     return {
       success: false,
